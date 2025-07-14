@@ -1,12 +1,41 @@
-# React + Vite
+# SIS Time Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Developed by Social Insight Solutions (SIS)**  
+Track your hours with ease as a sole trader. Organise your time entries per project and financial year — ready for export during tax time.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🗂️ Add and manage projects
+- ⏱️ Log time entries with dates, durations, and notes
+- 📅 Filter entries by financial year
+- 📦 Save data locally in your browser (no login required)
+- 📤 Export timesheets for tax preparation (coming soon)
 
-## Expanding the ESLint configuration
+## Live Demo
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🔗 [https://ginahorch.github.io/sis-timetracker/](https://ginahorch.github.io/sis-timetracker/)
+
+> 💡 You can run this app offline — all your data is stored in your browser.
+
+## Tech Stack
+
+- [React](https://reactjs.org/)
+- [Vite](https://vitejs.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- `localStorage` for persistence
+
+## Local Setup
+
+To run the app locally:
+
+```bash
+git clone https://ginahorch.github.io/sis-timetracker/
+cd sis-timetracker
+npm install
+npm run dev
+
+About SIS:
+Social Insight Solutions is a sole trader business focused on digital solutions for social impact. This tracker was built in-house to support time tracking needs for independent project work.
+
+📌 Status
+🛠️ In development — more features and polish coming soon.
