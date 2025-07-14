@@ -3,6 +3,7 @@ import ProjectForm from '../components/ProjectForm';
 import ProjectList from '../components/ProjectList';
 import TimeEntryForm from '../components/TimeEntryForm';
 import TimeSheetTable from '../components/TimeSheetTable';
+import InvoiceForm from '../components/InvoiceForm';
 import { getProjects, getEntries } from '../utils/storage';
 import { saveAs } from 'file-saver';
 
@@ -73,6 +74,8 @@ const filteredEntries = entries.filter(entry => {
       </div>
 
       <TimeSheetTable entries={filteredEntries} projects={projects} />
+
+      <InvoiceForm />
     </div>
   );
 }
