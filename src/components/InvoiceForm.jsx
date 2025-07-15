@@ -8,8 +8,16 @@ export default function InvoiceForm() {
   const [entries, setEntries] = useState([]);
 
   const [projectId, setProjectId] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+
+  const today = new Date();
+  const defaultEnd = today.toISOString().slice(0, 10);
+
+  const defaultStartDate = new Date(today);
+  defaultStartDate.setDate(today.getDate() - 13); // Includes today as one of 14 days
+  const defaultStart = defaultStartDate.toISOString().slice(0, 10);
+
+  const [startDate, setStartDate] = useState(defaultStart);
+  const [endDate, setEndDate] = useState(defaultEnd);
  
   const [clientName, setClientName] = useState('');
   const [clientAddress, setClientAddress] = useState('');
