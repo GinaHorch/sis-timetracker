@@ -16,19 +16,17 @@ export default function InvoiceForm() {
   const defaultStartDate = new Date(today);
   defaultStartDate.setDate(today.getDate() - 13); // Includes today as one of 14 days
   const defaultStart = defaultStartDate.toISOString().slice(0, 10);
-
+  const selectedProject = projects.find(p => p.id === projectId);
+  const projectRate = selectedProject?.hourlyRate || 0;
   const [startDate, setStartDate] = useState(defaultStart);
   const [endDate, setEndDate] = useState(defaultEnd);
-  const client = clients.find(c => c.id === overrideClientId || selectedProject?.clientId);
+  const client = clients.find(c => c.id === selectedProject?.clientId);
   
   useEffect(() => {
     setProjects(getProjects());
     setEntries(getEntries());
     setClients(getClients());
   }, []);
-
-  const selectedProject = projects.find(p => p.id === projectId);
-  const projectRate = selectedProject?.hourlyRate || 0;
 
   const filteredEntries = entries.filter(e =>
     e.projectId === projectId &&
@@ -80,8 +78,8 @@ export default function InvoiceForm() {
 
     // Client info (left side)
     doc.setFont('helvetica', 'normal');
-    doc.text(clientName, leftMargin, y + 6);
-    doc.text(clientAddress, leftMargin, y + 12);
+    doc.text(client?.name || '—', leftMargin, y + 6);
+    doc.text(client?.address || '—', leftMargin, y + 12);
 
     // Business info (right side)
     let businessInfo = [
@@ -192,7 +190,6 @@ export default function InvoiceForm() {
 
       <input className="border p-2 w-full" type="number" step="1" min="0" value={projectRate} onChange={e => setHourlyRate(e.target.value)} placeholder="Hourly rate" required />
       
-      <select className="border p-2 w-full" value={clientName} onChange={e => setOverrideClientId(e.target.value)} />
       <div className="border p-2 bg-gray-50 rounded">
         <p className="text-sm text-gray-600">Client</p>
         <p className="font-semibold">{client?.name || '—'}</p>
@@ -209,7 +206,7 @@ export default function InvoiceForm() {
       <button
         onClick={generateInvoice}
         className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-        disabled={!projectId || !startDate || !endDate || !clientName || !clientAddress}
+        disabled={!projectId || !startDate || !endDate || !client}
       >
         Generate Invoice PDF
       </button>
