@@ -4,18 +4,21 @@ import { getProjects, saveProjects } from '../utils/storage';
 export default function ProjectForm({ onAdd }) {
   const [name, setName] = useState('');
   const [year, setYear] = useState('2024–25');
+  const [hourlyRate, setHourlyRate] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const newProject = {
       id: Date.now().toString(),
       name,
-      financialYear: year
+      financialYear: year,
+      hourlyRate: parseFloat(hourlyRate)
     };
     const updated = [...getProjects(), newProject];
     saveProjects(updated);
     onAdd(updated);
     setName('');
+    setHourlyRate('');
   };
 
   return (
@@ -25,6 +28,7 @@ export default function ProjectForm({ onAdd }) {
         <option value="2024–25">2024–25</option>
         <option value="2025–26">2025–26</option>
       </select>
+      <input className="border p-1 w-full" type="number" step="0.01" min="0" placeholder="Hourly rate" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} required />
       <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Project</button>
     </form>
   );

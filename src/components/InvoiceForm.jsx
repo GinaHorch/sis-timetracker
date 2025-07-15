@@ -10,7 +10,7 @@ export default function InvoiceForm() {
   const [projectId, setProjectId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [hourlyRate, setHourlyRate] = useState(60);
+ 
   const [clientName, setClientName] = useState('');
   const [clientAddress, setClientAddress] = useState('');
 
@@ -20,6 +20,7 @@ export default function InvoiceForm() {
   }, []);
 
   const selectedProject = projects.find(p => p.id === projectId);
+  const projectRate = selectedProject?.hourlyRate || 0;
 
   const filteredEntries = entries.filter(e =>
     e.projectId === projectId &&
@@ -28,13 +29,14 @@ export default function InvoiceForm() {
   );
 
   const totalHours = filteredEntries.reduce((sum, e) => sum + e.hours, 0);
-  const totalAmount = totalHours * hourlyRate;
+  const totalAmount = totalHours * projectRate;
 
   const generateInvoice = () => {
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = 210;
     const leftMargin = 20;
     let y = 20;
+
     const today = new Date();
     const invoiceNumber = getNextInvoiceNumber();
 
@@ -103,7 +105,7 @@ export default function InvoiceForm() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.text(`${selectedProject?.name || 'Project'} — ${filteredEntries.length} entries`, leftMargin, y);
-    doc.text(`${totalHours} hours x $${hourlyRate}/hr`, leftMargin, y + 6);
+    doc.text(`${totalHours} hours x $${projectRate}/hr`, leftMargin, y + 6);
     doc.text(`$${totalAmount.toFixed(2)}`, pageWidth - leftMargin, y + 6, { align: 'right' });
 
     y += 18;
@@ -180,13 +182,14 @@ export default function InvoiceForm() {
         <input className="border p-2 w-full" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
       </div>
 
-      <input className="border p-2 w-full" type="number" step="1" min="0" value={hourlyRate} onChange={e => setHourlyRate(e.target.value)} placeholder="Hourly rate" required />
+      <input className="border p-2 w-full" type="number" step="1" min="0" value={projectRate} onChange={e => setHourlyRate(e.target.value)} placeholder="Hourly rate" required />
       <input className="border p-2 w-full" type="text" value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Client Name" required />
       <textarea className="border p-2 w-full" value={clientAddress} onChange={e => setClientAddress(e.target.value)} placeholder="Client Address" rows={2} required />
 
       <div className="bg-gray-50 p-4 rounded border">
         <p><strong>Entries:</strong> {filteredEntries.length}</p>
         <p><strong>Total Hours:</strong> {totalHours}</p>
+        <p><strong>Hourly Rate:</strong> ${projectRate}</p>
         <p><strong>Invoice Total:</strong> ${totalAmount.toFixed(2)}</p>
       </div>
 
