@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import { getProjects, getEntries, formatDate } from '../utils/storage';
 import { getNextInvoiceNumber } from '../utils/invoice';
+import { getClients } from '../utils/clients';
 
 export default function InvoiceForm() {
   const [projects, setProjects] = useState([]);
   const [entries, setEntries] = useState([]);
-
+  const [clients, setClients] = useState([]);
   const [projectId, setProjectId] = useState('');
 
   const today = new Date();
@@ -18,13 +19,12 @@ export default function InvoiceForm() {
 
   const [startDate, setStartDate] = useState(defaultStart);
   const [endDate, setEndDate] = useState(defaultEnd);
- 
-  const [clientName, setClientName] = useState('');
-  const [clientAddress, setClientAddress] = useState('');
-
+  const client = clients.find(c => c.id === overrideClientId || selectedProject?.clientId);
+  
   useEffect(() => {
     setProjects(getProjects());
     setEntries(getEntries());
+    setClients(getClients());
   }, []);
 
   const selectedProject = projects.find(p => p.id === projectId);
@@ -191,8 +191,13 @@ export default function InvoiceForm() {
       </div>
 
       <input className="border p-2 w-full" type="number" step="1" min="0" value={projectRate} onChange={e => setHourlyRate(e.target.value)} placeholder="Hourly rate" required />
-      <input className="border p-2 w-full" type="text" value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Client Name" required />
-      <textarea className="border p-2 w-full" value={clientAddress} onChange={e => setClientAddress(e.target.value)} placeholder="Client Address" rows={2} required />
+      
+      <select className="border p-2 w-full" value={clientName} onChange={e => setOverrideClientId(e.target.value)} />
+      <div className="border p-2 bg-gray-50 rounded">
+        <p className="text-sm text-gray-600">Client</p>
+        <p className="font-semibold">{client?.name || '—'}</p>
+        <p>{client?.address || '—'}</p>
+        </div>
 
       <div className="bg-gray-50 p-4 rounded border">
         <p><strong>Entries:</strong> {filteredEntries.length}</p>
