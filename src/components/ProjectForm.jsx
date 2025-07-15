@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getProjects, saveProjects } from '../utils/storage';
 import { getClients } from '../utils/clients';
+import ClientForm from './ClientForm';
 
 export default function ProjectForm({ onAdd }) {
   const [name, setName] = useState('');
@@ -31,37 +32,67 @@ export default function ProjectForm({ onAdd }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      {!showClientForm ? (
-        <>
-            <select
-            className="border p-1 w-full"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            required
-            >
-            <option value="">Select Client</option>
-            {clients.map(client => (
-                <option key={client.id} value={client.id}>{client.name}</option>
-            ))}
-            </select>
-            <button type="button" className="text-sm text-blue-600 underline" onClick={() => setShowClientForm(true)}>
-            Add New Client
-            </button>
-        </>
-        ) : (
-        <ClientForm onUpdate={(updatedClients) => {
-            setClients(updatedClients);
-            setShowClientForm(false);
-        }} />
-        )}
-      <input className="border p-1 w-full" placeholder="Project name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <select className="border p-1 w-full" value={year} onChange={(e) => setYear(e.target.value)}>
-        <option value="2024–25">2024–25</option>
-        <option value="2025–26">2025–26</option>
-      </select>
-      <input className="border p-1 w-full" type="number" step="0.01" min="0" placeholder="Hourly rate" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} required />
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Add Project</button>
-    </form>
-  );
+  <div className="space-y-4">
+    {showClientForm ? (
+      <ClientForm onUpdate={(updatedClients) => {
+        setClients(updatedClients);
+        setShowClientForm(false);
+        setClientId(updatedClients[updatedClients.length - 1].id); // Auto-select new client
+      }} />
+    ) : (
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <input
+          className="border p-1 w-full"
+          placeholder="Project name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <select
+          className="border p-1 w-full"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+        >
+          <option value="2024–25">2024–25</option>
+          <option value="2025–26">2025–26</option>
+        </select>
+        <input
+          className="border p-1 w-full"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="Hourly rate"
+          value={hourlyRate}
+          onChange={(e) => setHourlyRate(e.target.value)}
+          required
+        />
+
+        {/* Client selection dropdown */}
+        <select
+          className="border p-1 w-full"
+          value={clientId}
+          onChange={(e) => setClientId(e.target.value)}
+          required
+        >
+          <option value="">Select Client</option>
+          {clients.map(client => (
+            <option key={client.id} value={client.id}>{client.name}</option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          className="text-sm text-blue-600 underline"
+          onClick={() => setShowClientForm(true)}
+        >
+          Add New Client
+        </button>
+
+        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+          Add Project
+        </button>
+      </form>
+    )}
+  </div>
+);
 }
