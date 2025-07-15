@@ -8,6 +8,7 @@ export default function ProjectForm({ onAdd }) {
   const [hourlyRate, setHourlyRate] = useState('');
   const [clients, setClients] = useState([]);
   const [clientId, setClientId] = useState('');
+  const [showClientForm, setShowClientForm] = useState(false);
 
   useEffect(() => {
     setClients(getClients());
@@ -31,17 +32,29 @@ export default function ProjectForm({ onAdd }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
-      <select
-        className="border p-1 w-full"
-        value={clientId}
-        onChange={(e) => setClientId(e.target.value)}
-        required
-        >
-        <option value="">Select Client</option>
-        {clients.map(client => (
-            <option key={client.id} value={client.id}>{client.name}</option>
-        ))}
-      </select>  
+      {!showClientForm ? (
+        <>
+            <select
+            className="border p-1 w-full"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value)}
+            required
+            >
+            <option value="">Select Client</option>
+            {clients.map(client => (
+                <option key={client.id} value={client.id}>{client.name}</option>
+            ))}
+            </select>
+            <button type="button" className="text-sm text-blue-600 underline" onClick={() => setShowClientForm(true)}>
+            Add New Client
+            </button>
+        </>
+        ) : (
+        <ClientForm onUpdate={(updatedClients) => {
+            setClients(updatedClients);
+            setShowClientForm(false);
+        }} />
+        )}
       <input className="border p-1 w-full" placeholder="Project name" value={name} onChange={(e) => setName(e.target.value)} required />
       <select className="border p-1 w-full" value={year} onChange={(e) => setYear(e.target.value)}>
         <option value="2024–25">2024–25</option>
