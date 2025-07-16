@@ -62,7 +62,13 @@ const filteredEntries = entries.filter(entry => {
 
       <hr className="my-6" />
 
-      <TimeEntryForm projects={projects} onAdd={setEntries} />
+      <TimeEntryForm
+        projects={projects}
+        onAdd={(newEntries) => {
+          setEntries(newEntries);   // Already good
+          console.log('Dashboard received new entries');
+        }}
+      />
 
       <div className="mt-4 flex gap-4 items-center flex-wrap">
         <select className="border p-1" value={filterProject} onChange={(e) => setFilterProject(e.target.value)}>

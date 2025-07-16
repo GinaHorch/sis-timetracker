@@ -8,6 +8,7 @@ export default function TimeEntryForm({ projects, onAdd }) {
   const [notes, setNotes] = useState('');
 
   const handleSubmit = async (e) => {
+    console.log('Entry saved, refreshing...');
   e.preventDefault();
   const newEntry = {
     project_id,
@@ -17,10 +18,10 @@ export default function TimeEntryForm({ projects, onAdd }) {
   };
 
   const saved = await addEntry(newEntry);
+
   if (saved) {
-    const updated = await fetchEntries();
-    onAdd(updated);
-    // Reset form
+    const updatedEntries = await fetchEntries();  // Refetch all entries
+    onAdd(updatedEntries);                        // Update parent state
     setProject_id('');
     setDate('');
     setHours('');
