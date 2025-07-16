@@ -1,23 +1,20 @@
 import { useState } from 'react';
-import { getClients, saveClients } from '../utils/clients';
+import { fetchClients, addClient } from '../services/clientService';
 
 export default function ClientForm({ onUpdate }) {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newClient = {
-      id: Date.now().toString(),
-      name,
-      address
-    };
-    const updatedClients = [...getClients(), newClient];
-    saveClients(updatedClients);
-    onUpdate(updatedClients);
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const newClient = await addClient({ name, address });
+  if (newClient) {
+    const updated = await fetchClients();
+    onUpdate(updated);
     setName('');
     setAddress('');
-  };
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">

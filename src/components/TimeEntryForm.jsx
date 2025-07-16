@@ -1,35 +1,36 @@
 import { useState } from 'react';
-import { getEntries, saveEntries } from '../utils/storage';
+import { addEntry, fetchEntries } from '../services/timeService';
 
 export default function TimeEntryForm({ projects, onAdd }) {
-  const [projectId, setProjectId] = useState('');
+  const [project_id, setProject_id] = useState('');
   const [date, setDate] = useState('');
   const [hours, setHours] = useState('');
   const [notes, setNotes] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newEntry = {
-      id: Date.now().toString(),
-      projectId,
-      date,
-      hours: parseFloat(hours),
-      notes
-    };
-    const updated = [...getEntries(), newEntry];
-    saveEntries(updated);
-    onAdd(updated);
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  const newEntry = {
+    project_id,
+    date,
+    hours: parseFloat(hours),
+    notes
+  };
 
+  const saved = await addEntry(newEntry);
+  if (saved) {
+    const updated = await fetchEntries();
+    onAdd(updated);
     // Reset form
-    setProjectId('');
+    setProject_id('');
     setDate('');
     setHours('');
     setNotes('');
-  };
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2 mt-4">
-      <select className="border p-1 w-full" value={projectId} onChange={(e) => setProjectId(e.target.value)} required>
+      <select className="border p-1 w-full" value={project_id} onChange={(e) => setProject_id(e.target.value)} required>
         <option value="">Select Project</option>
         {projects.map((p) => (
           <option key={p.id} value={p.id}>{p.name}</option>

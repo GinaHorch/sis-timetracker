@@ -1,35 +1,46 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
-import { getProjects, getEntries, formatDate } from '../utils/storage';
+import { formatDate } from '../utils/storage';
 import { getNextInvoiceNumber } from '../utils/invoice';
-import { getClients } from '../utils/clients';
+import { fetchProjects } from '../services/projectService';
+import { fetchClients } from '../services/clientService';
+import { fetchEntries } from '../services/timeService';
 
 export default function InvoiceForm() {
   const [projects, setProjects] = useState([]);
   const [entries, setEntries] = useState([]);
   const [clients, setClients] = useState([]);
-  const [projectId, setProjectId] = useState('');
+  const [project_id, setProject_id] = useState('');
 
   const today = new Date();
   const defaultEnd = today.toISOString().slice(0, 10);
   const defaultStartDate = new Date(today);
   defaultStartDate.setDate(today.getDate() - 13); // Includes today as one of 14 days
   const defaultStart = defaultStartDate.toISOString().slice(0, 10);
-  const selectedProject = projects.find(p => p.id === projectId);
-  const projectRate = selectedProject?.hourlyRate || 0;
+  const selectedProject = projects.find(p => p.id === project_id);
+  const projectRate = selectedProject?.hourly_rate || 0;
   const [startDate, setStartDate] = useState(defaultStart);
   const [endDate, setEndDate] = useState(defaultEnd);
-  const client = clients.find(c => c.id === selectedProject?.clientId);
+  const client = clients.find(c => c.id === selectedProject?.client_id);
   const [includeDetails, setIncludeDetails] = useState(false);
   
   useEffect(() => {
-    setProjects(getProjects());
-    setEntries(getEntries());
-    setClients(getClients());
-  }, []);
+  const loadData = async () => {
+    const [projectData, entryData, clientData] = await Promise.all([
+      fetchProjects(),
+      fetchEntries(),
+      fetchClients()
+    ]);
+    setProjects(projectData);
+    setEntries(entryData);
+    setClients(clientData);
+  };
+  loadData();
+}, []);
+
 
   const filteredEntries = entries.filter((e) => {
-  if (e.projectId !== projectId) return false;
+  if (e.project_id !== project_id) return false;
 
   const entryDate = new Date(e.date);
   const start = new Date(startDate);
@@ -201,7 +212,7 @@ export default function InvoiceForm() {
     <div className="mt-10 space-y-4">
       <h2 className="text-xl font-semibold">Generate Invoice</h2>
 
-      <select className="border p-2 w-full" value={projectId} onChange={e => setProjectId(e.target.value)} required>
+      <select className="border p-2 w-full" value={project_id} onChange={e => setProject_id(e.target.value)} required>
         <option value="">Select Project</option>
         {projects.map(p => (
           <option key={p.id} value={p.id}>{p.name}</option>
@@ -213,7 +224,7 @@ export default function InvoiceForm() {
         <input className="border p-2 w-full" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
       </div>
 
-      <input className="border p-2 w-full" type="number" step="1" min="0" value={projectRate} onChange={e => setHourlyRate(e.target.value)} placeholder="Hourly rate" required />
+      <input className="border p-2 w-full" type="number" step="1" min="0" value={projectRate} onChange={e => setHourly_rate(e.target.value)} placeholder="Hourly rate" required />
       
       <div className="border p-2 bg-gray-50 rounded">
         <p className="text-sm text-gray-600">Client</p>
@@ -253,7 +264,7 @@ export default function InvoiceForm() {
       <button
         onClick={generateInvoice}
         className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-        disabled={!projectId || !startDate || !endDate || !client}
+        disabled={!project_id || !startDate || !endDate || !client}
       >
         Generate Invoice PDF
       </button>

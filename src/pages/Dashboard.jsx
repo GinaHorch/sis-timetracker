@@ -4,7 +4,8 @@ import ProjectList from '../components/ProjectList';
 import TimeEntryForm from '../components/TimeEntryForm';
 import TimeSheetTable from '../components/TimeSheetTable';
 import InvoiceForm from '../components/InvoiceForm';
-import { getProjects, getEntries } from '../utils/storage';
+import { fetchProjects } from '../services/projectService';
+import { fetchEntries } from '../services/timeService';
 import { saveAs } from 'file-saver';
 
 export default function Dashboard() {
@@ -14,21 +15,29 @@ export default function Dashboard() {
   const [filterYear, setFilterYear] = useState('');
 
   useEffect(() => {
-    setProjects(getProjects());
-    setEntries(getEntries());
-  }, []);
+  const loadData = async () => {
+    const [projectData, entryData] = await Promise.all([
+      fetchProjects(),
+      fetchEntries()
+    ]);
+    setProjects(projectData);
+    setEntries(entryData);
+  };
+
+  loadData();
+}, []);
 
 const filteredEntries = entries.filter(entry => {
-    const project = projects.find(p => p.id === entry.projectId);
+    const project = projects.find(p => p.id === entry.project_id);
     return (
-      (!filterProject || entry.projectId === filterProject) &&
+      (!filterProject || entry.project_id === filterProject) &&
       (!filterYear || project?.financialYear === filterYear)
     );
   });
 
   const exportCSV = () => {
     const rows = filteredEntries.map(e => {
-      const project = projects.find(p => p.id === e.projectId);
+      const project = projects.find(p => p.id === e.project_id);
       return {
         Date: e.date,
         Project: project?.name || '',
@@ -58,14 +67,14 @@ const filteredEntries = entries.filter(entry => {
       <div className="mt-4 flex gap-4 items-center flex-wrap">
         <select className="border p-1" value={filterProject} onChange={(e) => setFilterProject(e.target.value)}>
           <option value="">All Projects</option>
-          {projects.map(p => (
+          {projects.map((p) => (
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
 
         <select className="border p-1" value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
           <option value="">All Financial Years</option>
-          {[...new Set(projects.map(p => p.financialYear))].map(year => (
+          {[...new Set(projects.map(p => p.financial_year))].map(year => (
             <option key={year} value={year}>{year}</option>
           ))}
         </select>

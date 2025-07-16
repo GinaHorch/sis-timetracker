@@ -1,35 +1,43 @@
 import { useEffect, useState } from 'react';
-import { getProjects, saveProjects } from '../utils/storage';
-import { getClients } from '../utils/clients';
+import { fetchProjects, addProject } from '../services/projectService';
+import { fetchClients } from '../services/clientService';
 import ClientForm from './ClientForm';
 
 export default function ProjectForm({ onAdd }) {
   const [name, setName] = useState('');
   const [year, setYear] = useState('2024–25');
-  const [hourlyRate, setHourlyRate] = useState('');
+  const [hourly_rate, setHourly_rate] = useState('');
   const [clients, setClients] = useState([]);
-  const [clientId, setClientId] = useState('');
+  const [client_id, setClient_id] = useState('');
   const [showClientForm, setShowClientForm] = useState(false);
 
   useEffect(() => {
-    setClients(getClients());
+  const loadClients = async () => {
+    const data = await fetchClients();
+    setClients(data);
+  };
+  loadClients();
   }, []);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newProject = {
-      id: Date.now().toString(),
-      clientId,
-      name,
-      financialYear: year,
-      hourlyRate: parseFloat(hourlyRate)
-    };
-    const updated = [...getProjects(), newProject];
-    saveProjects(updated);
-    onAdd(updated);
-    setName('');
-    setHourlyRate('');
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const newProject = {
+    name,
+    financial_year: year,
+    hourly_rate: parseFloat(hourly_rate),
+    client_id: client_id,
   };
+
+  const saved = await addProject(newProject);
+  if (saved) {
+    const updatedProjects = await fetchProjects();
+    onAdd(updatedProjects);
+    setName('');
+    setHourly_rate('');
+    setClient_id('');
+  }
+};
 
   return (
   <div className="space-y-4">
@@ -37,7 +45,7 @@ export default function ProjectForm({ onAdd }) {
       <ClientForm onUpdate={(updatedClients) => {
         setClients(updatedClients);
         setShowClientForm(false);
-        setClientId(updatedClients[updatedClients.length - 1].id); // Auto-select new client
+        setClient_id(updatedClients[updatedClients.length - 1].id); // Auto-select new client
       }} />
     ) : (
       <form onSubmit={handleSubmit} className="space-y-2">
@@ -62,16 +70,16 @@ export default function ProjectForm({ onAdd }) {
           step="0.01"
           min="0"
           placeholder="Hourly rate"
-          value={hourlyRate}
-          onChange={(e) => setHourlyRate(e.target.value)}
+          value={hourly_rate}
+          onChange={(e) => setHourly_rate(e.target.value)}
           required
         />
 
         {/* Client selection dropdown */}
         <select
           className="border p-1 w-full"
-          value={clientId}
-          onChange={(e) => setClientId(e.target.value)}
+          value={client_id}
+          onChange={(e) => setClient_id(e.target.value)}
           required
         >
           <option value="">Select Client</option>

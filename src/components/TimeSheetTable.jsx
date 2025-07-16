@@ -18,7 +18,7 @@ export default function TimeSheetTable({ entries, projects }) {
           {entries.map(entry => (
             <tr key={entry.id}>
               <td className="border px-2 py-1">{formatDate(entry.date)}</td>
-              <td className="border px-2 py-1">{getProjectName(entry.projectId)}</td>
+              <td className="border px-2 py-1">{getProjectName(entry.project_id)}</td>
               <td className="border px-2 py-1">{entry.hours}</td>
               <td className="border px-2 py-1">{entry.notes}</td>
             </tr>
