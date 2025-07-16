@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
-import { formatDate } from '../utils/storage';
+import { formatDate } from '../utils/date';
 import { getNextInvoiceNumber } from '../services/invoiceService';
 import { fetchProjects } from '../services/projectService';
 import { fetchClients } from '../services/clientService';
@@ -18,11 +18,12 @@ export default function InvoiceForm() {
   defaultStartDate.setDate(today.getDate() - 13); // Includes today as one of 14 days
   const defaultStart = defaultStartDate.toISOString().slice(0, 10);
   const selectedProject = projects.find(p => p.id === project_id);
-  const projectRate = selectedProject?.hourly_rate || 0;
+  
   const [startDate, setStartDate] = useState(defaultStart);
   const [endDate, setEndDate] = useState(defaultEnd);
   const client = clients.find(c => c.id === selectedProject?.client_id);
   const [includeDetails, setIncludeDetails] = useState(false);
+  const [hourlyRate, setHourlyRate] = useState(0);
   
   useEffect(() => {
   const loadData = async () => {
@@ -35,9 +36,14 @@ export default function InvoiceForm() {
     setEntries(entryData);
     setClients(clientData);
   };
-  loadData();
-}, []);
+    loadData();
+    }, []);
 
+  useEffect(() => {
+  if (selectedProject?.hourly_rate) {
+    setHourlyRate(selectedProject.hourly_rate);
+    }
+    }, [selectedProject]);
 
   const filteredEntries = entries.filter((e) => {
   if (e.project_id !== project_id) return false;
@@ -50,16 +56,16 @@ export default function InvoiceForm() {
 });
 
   const totalHours = filteredEntries.reduce((sum, e) => sum + e.hours, 0);
-  const totalAmount = totalHours * projectRate;
+  const totalAmount = totalHours * hourlyRate;
 
-  const generateInvoice = () => {
+  const generateInvoice = async () => {
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = 210;
     const leftMargin = 20;
     let y = 20;
 
     const today = new Date();
-    const invoiceNumber = getNextInvoiceNumber();
+    const invoiceNumber = await getNextInvoiceNumber();
 
     // Add SIS logo
     doc.addImage(
@@ -126,7 +132,7 @@ export default function InvoiceForm() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.text(`${selectedProject?.name || 'Project'} — ${filteredEntries.length} entries`, leftMargin, y);
-    doc.text(`${totalHours} hours x $${projectRate}/hr`, leftMargin, y + 6);
+    doc.text(`${totalHours} hours x $${hourlyRate}/hr`, leftMargin, y + 6);
     doc.text(`$${totalAmount.toFixed(2)}`, pageWidth - leftMargin, y + 6, { align: 'right' });
 
     y += 8;
@@ -224,7 +230,7 @@ export default function InvoiceForm() {
         <input className="border p-2 w-full" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
       </div>
 
-      <input className="border p-2 w-full" type="number" step="1" min="0" value={projectRate} onChange={e => setHourly_rate(e.target.value)} placeholder="Hourly rate" required />
+      <input className="border p-2 w-full" type="number" step="1" min="0" value={hourlyRate} onChange={e => setHourlyRate(parseFloat(e.target.value))} placeholder="Hourly rate" required />
       
       <div className="border p-2 bg-gray-50 rounded">
         <p className="text-sm text-gray-600">Client</p>
@@ -245,7 +251,7 @@ export default function InvoiceForm() {
       <div className="bg-gray-50 p-4 rounded border">
         <p><strong>Entries:</strong> {filteredEntries.length}</p>
         <p><strong>Total Hours:</strong> {totalHours}</p>
-        <p><strong>Hourly Rate:</strong> ${projectRate}</p>
+        <p><strong>Hourly Rate:</strong> ${hourlyRate}</p>
         <p><strong>Invoice Total:</strong> ${totalAmount.toFixed(2)}</p>
 
         {filteredEntries.length > 0 && (

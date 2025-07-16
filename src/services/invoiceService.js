@@ -6,14 +6,15 @@ export async function getNextInvoiceNumber() {
     .from('invoice_counter')
     .select('counter')
     .eq('id', 1)
-    .single();
+    .maybeSingle();
 
-  if (fetchError) {
-    console.error('Fetch error:', fetchError.message);
-    return null;
+ if (fetchError || !data) {
+    console.error('Fetch error:', fetchError?.message || 'Counter not found');
+    return 'SIS-ERROR';
   }
 
-  const next = data.counter;
+  const current = data.counter;
+  const next = current + 1;
 
   // Update the counter
   const { error: updateError } = await supabase
@@ -23,7 +24,7 @@ export async function getNextInvoiceNumber() {
 
   if (updateError) {
     console.error('Update error:', updateError.message);
-    return null;
+    return 'SIS-ERROR';
   }
 
   // Return formatted invoice number

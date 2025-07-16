@@ -1,4 +1,4 @@
-import { formatDate } from "../utils/storage";
+import { formatDate } from "../utils/date";
 
 export default function TimeSheetTable({ entries, projects }) {
   const getProjectName = (id) => projects.find(p => p.id === id)?.name || 'Unknown';
