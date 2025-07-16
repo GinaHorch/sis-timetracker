@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import { formatDate } from '../utils/storage';
-import { getNextInvoiceNumber } from '../utils/invoice';
+import { getNextInvoiceNumber } from '../services/invoiceService';
 import { fetchProjects } from '../services/projectService';
 import { fetchClients } from '../services/clientService';
 import { fetchEntries } from '../services/timeService';
