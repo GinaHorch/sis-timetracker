@@ -12,7 +12,6 @@ export default function InvoiceForm() {
 
   const today = new Date();
   const defaultEnd = today.toISOString().slice(0, 10);
-
   const defaultStartDate = new Date(today);
   defaultStartDate.setDate(today.getDate() - 13); // Includes today as one of 14 days
   const defaultStart = defaultStartDate.toISOString().slice(0, 10);
@@ -21,6 +20,7 @@ export default function InvoiceForm() {
   const [startDate, setStartDate] = useState(defaultStart);
   const [endDate, setEndDate] = useState(defaultEnd);
   const client = clients.find(c => c.id === selectedProject?.clientId);
+  const [includeDetails, setIncludeDetails] = useState(false);
   
   useEffect(() => {
     setProjects(getProjects());
@@ -28,11 +28,15 @@ export default function InvoiceForm() {
     setClients(getClients());
   }, []);
 
-  const filteredEntries = entries.filter(e =>
-    e.projectId === projectId &&
-    e.date >= startDate &&
-    e.date <= endDate
-  );
+  const filteredEntries = entries.filter((e) => {
+  if (e.projectId !== projectId) return false;
+
+  const entryDate = new Date(e.date);
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  return entryDate >= start && entryDate <= end;
+});
 
   const totalHours = filteredEntries.reduce((sum, e) => sum + e.hours, 0);
   const totalAmount = totalHours * projectRate;
@@ -114,7 +118,7 @@ export default function InvoiceForm() {
     doc.text(`${totalHours} hours x $${projectRate}/hr`, leftMargin, y + 6);
     doc.text(`$${totalAmount.toFixed(2)}`, pageWidth - leftMargin, y + 6, { align: 'right' });
 
-    y += 18;
+    y += 8;
 
     // Horizontal line before TOTAL
     doc.setDrawColor(0);
@@ -129,12 +133,33 @@ export default function InvoiceForm() {
 
     y += 18;
 
+    if (includeDetails && filteredEntries.length > 0) {
+    doc.setFontSize(10);
+    doc.setTextColor(50);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Work Breakdown:', leftMargin, y);
+    y += 6;
+
+    doc.setFont('helvetica', 'normal');
+    filteredEntries.forEach(entry => {
+        const desc = `${formatDate(entry.date)} — ${entry.notes || 'No notes'}`;
+        const hrs = `${entry.hours} hrs`;
+        
+        // Draw line items
+        doc.text(desc, leftMargin, y);
+        doc.text(hrs, pageWidth - leftMargin, y, { align: 'right' });
+        y += 6;
+    });
+
+    y += 6;
+    }
+
     // Thank you message
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(10);
     doc.setTextColor(50);
     doc.text('Thank you for the opportunity to work with you.', leftMargin, y);
-    y += 6;
+    y += 8;
 
     // GST clarification
     doc.setFont('helvetica', 'normal');
@@ -196,11 +221,33 @@ export default function InvoiceForm() {
         <p>{client?.address || '—'}</p>
         </div>
 
+      <label className="flex items-center space-x-2 text-sm">
+        <input
+            type="checkbox"
+            checked={includeDetails}
+            onChange={() => setIncludeDetails(!includeDetails)}
+        />
+        <span>Include entry breakdown on invoice PDF</span>
+      </label>
+
+
       <div className="bg-gray-50 p-4 rounded border">
         <p><strong>Entries:</strong> {filteredEntries.length}</p>
         <p><strong>Total Hours:</strong> {totalHours}</p>
         <p><strong>Hourly Rate:</strong> ${projectRate}</p>
         <p><strong>Invoice Total:</strong> ${totalAmount.toFixed(2)}</p>
+
+        {filteredEntries.length > 0 && (
+            <div className="pt-2 border-t text-sm text-gray-700 space-y-1">
+            <p className="font-semibold">Included Entries:</p>
+            {filteredEntries.map((entry) => (
+                <div key={entry.id} className="flex justify-between">
+                <span>{formatDate(entry.date)} — {entry.notes || 'No notes'}</span>
+                <span>{entry.hours} hrs</span>
+                </div>
+            ))}
+            </div>
+        )}
       </div>
 
       <button
