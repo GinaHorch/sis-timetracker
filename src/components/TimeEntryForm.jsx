@@ -1,15 +1,29 @@
-import { useState } from 'react';
-import { addEntry, fetchEntries } from '../services/timeService';
+import { useState, useEffect } from 'react';
+import { addEntry, fetchEntries, updateEntry } from '../services/timeService';
 
-export default function TimeEntryForm({ projects, onAdd }) {
+export default function TimeEntryForm({ projects, onAdd, onEdit, editingEntry, onCancel }) {
   const [project_id, setProject_id] = useState('');
   const [date, setDate] = useState('');
   const [hours, setHours] = useState('');
   const [notes, setNotes] = useState('');
 
+  useEffect(() => {
+    if (editingEntry) {
+      setProject_id(editingEntry.project_id);
+      setDate(editingEntry.date);
+      setHours(editingEntry.hours);
+      setNotes(editingEntry.notes || '');
+    } else {
+      setProject_id('');
+      setDate('');
+      setHours('');
+      setNotes('');
+    }
+  }, [editingEntry]);
+
   const handleSubmit = async (e) => {
-    console.log('Entry saved, refreshing...');
   e.preventDefault();
+    console.log('Entry saved, refreshing...');
   const newEntry = {
     project_id,
     date,
@@ -17,7 +31,12 @@ export default function TimeEntryForm({ projects, onAdd }) {
     notes
   };
 
-  const saved = await addEntry(newEntry);
+  let saved;
+    if (editingEntry) {
+      saved = await updateEntry(editingEntry.id, newEntry);
+    } else {
+      saved = await addEntry(newEntry);
+    }
 
   if (saved) {
     const updatedEntries = await fetchEntries();  // Refetch all entries
@@ -26,6 +45,7 @@ export default function TimeEntryForm({ projects, onAdd }) {
     setDate('');
     setHours('');
     setNotes('');
+    if (onCancel) onCancel(); // Clear editing state
   }
 };
 
@@ -40,7 +60,21 @@ export default function TimeEntryForm({ projects, onAdd }) {
       <input className="border p-1 w-full" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
       <input className="border p-1 w-full" type="number" step="0.25" min="0" placeholder="Hours worked" value={hours} onChange={(e) => setHours(e.target.value)} required />
       <textarea className="border p-1 w-full" placeholder="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-      <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Add Entry</button>
+
+      <div className="flex gap-2">
+        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">
+          {editingEntry ? 'Update Entry' : 'Add Entry'}
+        </button>
+        {editingEntry && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="bg-gray-400 text-white px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

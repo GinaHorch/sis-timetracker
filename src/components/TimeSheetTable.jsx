@@ -1,6 +1,6 @@
 import { formatDate } from "../utils/date";
 
-export default function TimeSheetTable({ entries, projects }) {
+export default function TimeSheetTable({ entries, projects, onEdit, onDelete }) {
   const getProjectName = (id) => projects.find(p => p.id === id)?.name || 'Unknown';
 
   return (
@@ -12,6 +12,7 @@ export default function TimeSheetTable({ entries, projects }) {
             <th className="border px-2 py-1">Project</th>
             <th className="border px-2 py-1">Hours</th>
             <th className="border px-2 py-1">Notes</th>
+            <th className="border px-2 py-1">Actions</th> 
           </tr>
         </thead>
         <tbody>
@@ -21,6 +22,20 @@ export default function TimeSheetTable({ entries, projects }) {
               <td className="border px-2 py-1">{getProjectName(entry.project_id)}</td>
               <td className="border px-2 py-1">{entry.hours}</td>
               <td className="border px-2 py-1">{entry.notes}</td>
+              <td className="border px-2 py-1 space-x-2">
+                <button
+                  onClick={() => onEdit(entry)}
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDelete(entry.id)}
+                  className="text-red-600 hover:underline text-sm"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

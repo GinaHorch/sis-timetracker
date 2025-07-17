@@ -5,7 +5,7 @@ import TimeEntryForm from '../components/TimeEntryForm';
 import TimeSheetTable from '../components/TimeSheetTable';
 import InvoiceForm from '../components/InvoiceForm';
 import { fetchProjects } from '../services/projectService';
-import { fetchEntries } from '../services/timeService';
+import { fetchEntries, deleteEntry } from '../services/timeService';
 import { saveAs } from 'file-saver';
 
 export default function Dashboard() {
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [entries, setEntries] = useState([]);
   const [filterProject, setFilterProject] = useState('');
   const [filterYear, setFilterYear] = useState('');
+  const [editingEntry, setEditingEntry] = useState(null);
 
   useEffect(() => {
   const loadData = async () => {
@@ -35,6 +36,15 @@ const filteredEntries = entries.filter(entry => {
     );
   });
 
+  const handleDeleteEntry = async (id) => {
+    await deleteEntry(id);
+    const updated = await fetchEntries();
+    setEntries(updated);
+  };
+
+  const handleEditEntry = (entry) => {
+    setEditingEntry(entry);
+  };
   const exportCSV = () => {
     const rows = filteredEntries.map(e => {
       const project = projects.find(p => p.id === e.project_id);
@@ -68,6 +78,11 @@ const filteredEntries = entries.filter(entry => {
           setEntries(newEntries);   // Already good
           console.log('Dashboard received new entries');
         }}
+        onEdit={handleEditEntry}
+        onDelete={handleDeleteEntry}
+        editingEntry={editingEntry}
+        setEditingEntry={setEditingEntry}
+        onCancel={() => setEditingEntry(null)}
       />
 
       <div className="mt-4 flex gap-4 items-center flex-wrap">
@@ -88,7 +103,11 @@ const filteredEntries = entries.filter(entry => {
         <button onClick={exportCSV} className="bg-blue-600 text-white px-4 py-1 rounded">Export CSV</button>
       </div>
 
-      <TimeSheetTable entries={filteredEntries} projects={projects} />
+      <TimeSheetTable 
+          entries={filteredEntries} 
+          projects={projects} 
+          onEdit={handleEditEntry} 
+          onDelete={handleDeleteEntry} />
 
       <InvoiceForm />
     </div>

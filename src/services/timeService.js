@@ -26,3 +26,28 @@ export async function addEntry(entry) {
 
   return data?.[0] || null;
 }
+
+export async function updateEntry(id, updatedEntry) {
+  const { data, error } = await supabase
+    .from('times')
+    .update(updatedEntry)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error updating time entry:', error.message);
+    return null;
+  }
+  
+  return data;
+}
+
+export async function deleteEntry(id) {
+  const { error } = await supabase
+    .from('times')
+    .delete()
+    .eq('id', id);
+
+  if (error) console.error('Delete error:', error.message);
+}
