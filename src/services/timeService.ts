@@ -1,6 +1,15 @@
 import { supabase } from '../supabaseClient';
 
-export async function fetchEntries() {
+export interface TimeEntry {
+  id: string;
+  project_id: string;
+  date: string; // YYYY-MM-DD
+  hours: number;
+  notes: string;
+  created_at: string;
+}
+
+export async function fetchEntries(): Promise<TimeEntry[]> {
   const { data, error } = await supabase
     .from('times')
     .select('*')
@@ -11,23 +20,25 @@ export async function fetchEntries() {
     return [];
   }
 
-  return data || [];
+  return (data as TimeEntry[]) || [];
 }
 
-export async function addEntry(entry) {
+export async function addEntry(entry: Omit<TimeEntry, 'id' | 'created_at'>): Promise<TimeEntry | null> {
   const { data, error } = await supabase
     .from('times')
-    .insert([entry]);
+    .insert([entry])
+    .select()
+    .maybeSingle();
 
   if (error) {
-    console.error('Error adding time entry:', error.message);
+    console.error('Error adding time entry:', error?.message ?? 'No data returned');
     return null;
   }
 
-  return data?.[0] || null;
+  return data as TimeEntry;
 }
 
-export async function updateEntry(id, updatedEntry) {
+export async function updateEntry(id: string, updatedEntry: Partial<TimeEntry>): Promise<TimeEntry | null> {
   const { data, error } = await supabase
     .from('times')
     .update(updatedEntry)
@@ -40,10 +51,10 @@ export async function updateEntry(id, updatedEntry) {
     return null;
   }
   
-  return data;
+  return data as TimeEntry | null;
 }
 
-export async function deleteEntry(id) {
+export async function deleteEntry(id: string): Promise<void> {
   const { error } = await supabase
     .from('times')
     .delete()

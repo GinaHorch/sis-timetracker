@@ -2,24 +2,27 @@ import { useEffect, useState } from 'react';
 import { fetchProjects, addProject } from '../services/projectService';
 import { fetchClients } from '../services/clientService';
 import ClientForm from './ClientForm';
+import { Client } from '../services/clientService';
+import { Project } from '../services/projectService';
 
-export default function ProjectForm({ onAdd }) {
+export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) => void }) {
   const [name, setName] = useState('');
-  const [year, setYear] = useState('2024–25');
+  const [year, setYear] = useState('2025–26');
   const [hourly_rate, setHourly_rate] = useState('');
-  const [clients, setClients] = useState([]);
-  const [client_id, setClient_id] = useState('');
+  const [clients, setClients] = useState<Client[]>([]);
+  const [client_id, setClient_id] = useState<string>('');
   const [showClientForm, setShowClientForm] = useState(false);
+  const [description, setDescription] = useState(''); // Optional description field
 
   useEffect(() => {
   const loadClients = async () => {
-    const data = await fetchClients();
+    const data: Client[] = await fetchClients();
     setClients(data);
   };
   loadClients();
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
   const newProject = {
@@ -27,6 +30,8 @@ export default function ProjectForm({ onAdd }) {
     financial_year: year,
     hourly_rate: parseFloat(hourly_rate),
     client_id: client_id,
+    created_at: new Date().toISOString(),
+    description: '', // Optional field, can be set later
   };
 
   const saved = await addProject(newProject);
@@ -36,13 +41,14 @@ export default function ProjectForm({ onAdd }) {
     setName('');
     setHourly_rate('');
     setClient_id('');
+    setDescription(''); // Reset description field
   }
 };
 
   return (
   <div className="space-y-4">
     {showClientForm ? (
-      <ClientForm onUpdate={(updatedClients) => {
+      <ClientForm onUpdate={(updatedClients: Client[]) => {
         setClients(updatedClients);
         setShowClientForm(false);
         setClient_id(updatedClients[updatedClients.length - 1].id); // Auto-select new client
@@ -73,6 +79,12 @@ export default function ProjectForm({ onAdd }) {
           value={hourly_rate}
           onChange={(e) => setHourly_rate(e.target.value)}
           required
+        />
+        <textarea
+          className="border p-1 w-full"
+          placeholder="Description (optional)"
+          value={description} // Placeholder for description, can be set later
+          onChange={(e) => setDescription(e.target.value)}
         />
 
         {/* Client selection dropdown */}
