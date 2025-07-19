@@ -1,12 +1,17 @@
 import { supabase } from '../supabaseClient';
 
-export async function getNextInvoiceNumber() {
+interface InvoiceCounter {
+  id: number;
+  counter: number;
+}
+
+export async function getNextInvoiceNumber(): Promise<string> {
   // Fetch the current counter
   const { data, error: fetchError } = await supabase
     .from('invoice_counter')
     .select('counter')
     .eq('id', 1)
-    .maybeSingle();
+    .maybeSingle<InvoiceCounter>();
 
  if (fetchError || !data) {
     console.error('Fetch error:', fetchError?.message || 'Counter not found');
@@ -19,7 +24,7 @@ export async function getNextInvoiceNumber() {
   // Update the counter
   const { error: updateError } = await supabase
     .from('invoice_counter')
-    .update({ counter: next + 1 })
+    .update({ counter: next })
     .eq('id', 1);
 
   if (updateError) {
