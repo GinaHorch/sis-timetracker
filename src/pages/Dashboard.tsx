@@ -7,6 +7,7 @@ import InvoiceForm from '../components/InvoiceForm';
 import { fetchProjects, Project } from '../services/projectService';
 import { fetchEntries, deleteEntry, TimeEntry } from '../services/timeService';
 import { saveAs } from 'file-saver';
+import Header from '../components/Header';
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -65,13 +66,19 @@ const filteredEntries = entries.filter(entry => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">SIS Time Tracker</h1>
+      <Header />
 
+    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
       <ProjectForm onAdd={setProjects} />
+    </div>
+
+    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
       <ProjectList projects={projects} />
+    </div>
 
       <hr className="my-6" />
 
+    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
       <TimeEntryForm
         projects={projects}
         onAdd={(newEntries) => {
@@ -102,14 +109,19 @@ const filteredEntries = entries.filter(entry => {
 
         <button onClick={exportCSV} className="bg-blue-600 text-white px-4 py-1 rounded">Export CSV</button>
       </div>
+    </div>
 
+    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
       <TimeSheetTable 
           entries={filteredEntries} 
           projects={projects} 
           onEdit={handleEditEntry} 
           onDelete={handleDeleteEntry} />
+    </div>
 
+    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
       <InvoiceForm />
+    </div>
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { fetchClients } from '../services/clientService';
 import ClientForm from './ClientForm';
 import { Client } from '../services/clientService';
 import { Project } from '../services/projectService';
+import { Progress } from "@/components/ui/progress";
+import { toast } from 'sonner';
 
 export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) => void }) {
   const [name, setName] = useState('');
@@ -13,6 +15,7 @@ export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) =>
   const [client_id, setClient_id] = useState<string>('');
   const [showClientForm, setShowClientForm] = useState(false);
   const [description, setDescription] = useState(''); // Optional description field
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
   const loadClients = async () => {
@@ -23,30 +26,42 @@ export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) =>
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      const newProject = {
+        name,
+        financial_year: year,
+        hourly_rate: parseFloat(hourly_rate),
+        client_id: client_id,
+        created_at: new Date().toISOString(),
+        description: '', // Optional field, can be set later
+      };
 
-  const newProject = {
-    name,
-    financial_year: year,
-    hourly_rate: parseFloat(hourly_rate),
-    client_id: client_id,
-    created_at: new Date().toISOString(),
-    description: '', // Optional field, can be set later
+      const saved = await addProject(newProject);
+      if (saved) {
+        const updatedProjects = await fetchProjects();
+        onAdd(updatedProjects);
+        setName('');
+        setHourly_rate('');
+        setClient_id('');
+        setDescription(''); // Reset description field
+        toast.success('Project added successfully!');
+      } else {
+        toast.error('Failed to add project');
+      }
+    } catch (error) {
+      console.error('Error adding project:', error);
+      toast.error('An error occurred while adding the project');
+    } finally {
+      setIsSaving(false);
+    }
   };
-
-  const saved = await addProject(newProject);
-  if (saved) {
-    const updatedProjects = await fetchProjects();
-    onAdd(updatedProjects);
-    setName('');
-    setHourly_rate('');
-    setClient_id('');
-    setDescription(''); // Reset description field
-  }
-};
 
   return (
   <div className="space-y-4">
+     {isSaving && <Progress value={100} className="h-1 bg-blue-500" />}
+
     {showClientForm ? (
       <ClientForm onUpdate={(updatedClients: Client[]) => {
         setClients(updatedClients);
