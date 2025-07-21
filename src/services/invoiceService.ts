@@ -18,14 +18,12 @@ export async function getNextInvoiceNumber(): Promise<string> {
     return 'SIS-ERROR';
   }
 
-  const current = data.counter;
-  const next = current + 1;
+  const next = (data?.counter ?? 0) + 1;
 
   // Update the counter
   const { error: updateError } = await supabase
     .from('invoice_counter')
-    .update({ counter: next })
-    .eq('id', 1);
+    .upsert({ id: 1, counter: next });
 
   if (updateError) {
     console.error('Update error:', updateError.message);
