@@ -2,29 +2,30 @@ import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import { formatDate } from '../utils/date';
 import { getNextInvoiceNumber } from '../services/invoiceService';
-import { fetchProjects } from '../services/projectService';
-import { fetchClients } from '../services/clientService';
-import { fetchEntries } from '../services/timeService';
+import { fetchProjects, Project } from '../services/projectService';
+import { fetchClients, Client } from '../services/clientService';
+import { fetchEntries, TimeEntry } from '../services/timeService';
 
 export default function InvoiceForm() {
-  const [projects, setProjects] = useState([]);
-  const [entries, setEntries] = useState([]);
-  const [clients, setClients] = useState([]);
-  const [project_id, setProject_id] = useState('');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [project_id, setProject_id] = useState<string>('');
 
   const today = new Date();
   const defaultEnd = today.toISOString().slice(0, 10);
   const defaultStartDate = new Date(today);
   defaultStartDate.setDate(today.getDate() - 13); // Includes today as one of 14 days
   const defaultStart = defaultStartDate.toISOString().slice(0, 10);
-  const selectedProject = projects.find(p => p.id === project_id);
+
+  const [startDate, setStartDate] = useState<string>(defaultStart);
+  const [endDate, setEndDate] = useState<string>(defaultEnd);
+  const [includeDetails, setIncludeDetails] = useState<boolean>(false);
+  const [hourlyRate, setHourlyRate] = useState<number>(0);
   
-  const [startDate, setStartDate] = useState(defaultStart);
-  const [endDate, setEndDate] = useState(defaultEnd);
-  const client = clients.find(c => c.id === selectedProject?.client_id);
-  const [includeDetails, setIncludeDetails] = useState(false);
-  const [hourlyRate, setHourlyRate] = useState(0);
-  
+  const selectedProject = projects.find((p) => p.id === project_id);
+  const client = clients.find((c) => c.id === selectedProject?.client_id);
+    
   useEffect(() => {
   const loadData = async () => {
     const [projectData, entryData, clientData] = await Promise.all([
@@ -204,7 +205,7 @@ export default function InvoiceForm() {
     const ackText = `I am here on unceded Whadjuk Noongar and Mooro Noongar Country. I respectfully acknowledge the Whadjuk and Mooro people of the Noongar Nation as the Traditional Custodians of the lands where I live, work and learn. I honour their continuing connection to culture, country, waters, and skies and recognise the scientific contributions made by First Nations people. I pay my respects to their Elders past, present and emerging leaders.`;
 
     // Add it near the bottom of the page
-    const splitAck = doc.splitTextToSize(ackText, pageWidth - 2 * leftMargin);
+    const splitAck: string[] = doc.splitTextToSize(ackText, pageWidth - 2 * leftMargin);
     doc.setFontSize(9);
     doc.setTextColor(100);
     splitAck.forEach((line, i) => {

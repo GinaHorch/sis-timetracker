@@ -1,7 +1,16 @@
 import { useState, useEffect } from 'react';
-import { addEntry, fetchEntries, updateEntry } from '../services/timeService';
+import { addEntry, fetchEntries, updateEntry, TimeEntry } from '../services/timeService';
+import { Project } from '../services/projectService';
 
-export default function TimeEntryForm({ projects, onAdd, onEdit, editingEntry, onCancel }) {
+interface TimeEntryFormProps {
+  projects: Project[];
+  onAdd: (entries: TimeEntry[]) => void;
+  onEdit?: (entry: TimeEntry) => void;
+  editingEntry: TimeEntry | null;
+  onCancel?: () => void;
+}
+
+export default function TimeEntryForm({ projects, onAdd, onEdit, editingEntry, onCancel }: TimeEntryFormProps) {
   const [project_id, setProject_id] = useState('');
   const [date, setDate] = useState('');
   const [hours, setHours] = useState('');
@@ -11,7 +20,7 @@ export default function TimeEntryForm({ projects, onAdd, onEdit, editingEntry, o
     if (editingEntry) {
       setProject_id(editingEntry.project_id);
       setDate(editingEntry.date);
-      setHours(editingEntry.hours);
+      setHours(String(editingEntry.hours));
       setNotes(editingEntry.notes || '');
     } else {
       setProject_id('');
@@ -21,14 +30,14 @@ export default function TimeEntryForm({ projects, onAdd, onEdit, editingEntry, o
     }
   }, [editingEntry]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
     console.log('Entry saved, refreshing...');
   const newEntry = {
     project_id,
     date,
     hours: parseFloat(hours),
-    notes
+    notes,
   };
 
   let saved;

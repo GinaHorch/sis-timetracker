@@ -1,7 +1,17 @@
+import { TimeEntry } from "@/services/timeService";
+import { Project } from "@/services/projectService";
 import { formatDate } from "../utils/date";
 
-export default function TimeSheetTable({ entries, projects, onEdit, onDelete }) {
-  const getProjectName = (id) => projects.find(p => p.id === id)?.name || 'Unknown';
+interface TimeSheetTableProps {
+  entries: TimeEntry[];
+  projects: Project[];
+  onEdit: (entry: TimeEntry) => void;
+  onDelete: (id: string) => void;
+}
+
+export default function TimeSheetTable({ entries, projects, onEdit, onDelete }: TimeSheetTableProps) {
+  const getProjectName = (id: string): string => 
+    projects.find((p) => p.id === id)?.name || 'Unknown';
 
   return (
     <div className="mt-6">
