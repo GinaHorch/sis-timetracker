@@ -217,7 +217,6 @@ export default function InvoiceForm() {
 
   return (
     <div className="mt-10 space-y-4">
-      <h2 className="text-xl font-semibold">Generate Invoice</h2>
 
       <select className="border p-2 w-full" value={project_id} onChange={e => setProject_id(e.target.value)} required>
         <option value="">Select Project</option>

@@ -8,6 +8,7 @@ import { fetchProjects, Project } from '../services/projectService';
 import { fetchEntries, deleteEntry, TimeEntry } from '../services/timeService';
 import { saveAs } from 'file-saver';
 import Header from '../components/Header';
+import { Card, CardContent } from '@/components/ui/card';
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -67,18 +68,22 @@ const filteredEntries = entries.filter(entry => {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <Header />
+      <div className="max-w-4xl mx-auto p-4 space-y-6">
 
-    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
-      <ProjectForm onAdd={setProjects} />
-    </div>
-
-    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
+    <Card className="p-4">
+      <CardContent>
+    <h2 className="text-lg font-semibold mb-2">Add Project</h2>
+      <ProjectForm onAdd={setProjects} />   
       <ProjectList projects={projects} />
-    </div>
+    
+    </CardContent>
+    </Card>
 
       <hr className="my-6" />
 
-    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
+    <Card className="p-4">
+      <CardContent>
+      <h2 className="text-lg font-semibold mb-2">Time Entries</h2>
       <TimeEntryForm
         projects={projects}
         onAdd={(newEntries) => {
@@ -109,8 +114,7 @@ const filteredEntries = entries.filter(entry => {
 
         <button onClick={exportCSV} className="bg-blue-600 text-white px-4 py-1 rounded">Export CSV</button>
       </div>
-    </div>
-
+    
     <div className="bg-white shadow-md rounded-2xl p-4 my-4">
       <TimeSheetTable 
           entries={filteredEntries} 
@@ -118,11 +122,17 @@ const filteredEntries = entries.filter(entry => {
           onEdit={handleEditEntry} 
           onDelete={handleDeleteEntry} />
     </div>
+      </CardContent>
+    </Card>
 
-    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
+   <Card className="p-4">
+      <CardContent>
+      <h2 className="text-lg font-semibold mb-2">Generate Invoice</h2>
       <InvoiceForm />
-    </div>
-    </div>
+      </CardContent>
+    </Card>
+      </div>
+  </div>
   );
 }
 
