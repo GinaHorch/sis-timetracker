@@ -216,61 +216,127 @@ export default function InvoiceForm() {
     };
 
   return (
-    <div className="mt-10 space-y-4">
-
-      <select className="border p-2 w-full" value={project_id} onChange={e => setProject_id(e.target.value)} required>
-        <option value="">Select Project</option>
-        {projects.map(p => (
-          <option key={p.id} value={p.id}>{p.name}</option>
-        ))}
-      </select>
-
-      <div className="flex gap-4">
-        <input className="border p-2 w-full" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
-        <input className="border p-2 w-full" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-neutral-700 mb-2">
+          Project
+        </label>
+        <select 
+          className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors" 
+          value={project_id} 
+          onChange={e => setProject_id(e.target.value)} 
+          required
+        >
+          <option value="">Select Project</option>
+          {projects.map(p => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
       </div>
 
-      <input className="border p-2 w-full" type="number" step="1" min="0" value={hourlyRate} onChange={e => setHourlyRate(parseFloat(e.target.value))} placeholder="Hourly rate" required />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            Start Date
+          </label>
+          <input 
+            className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors" 
+            type="date" 
+            value={startDate} 
+            onChange={e => setStartDate(e.target.value)} 
+            required 
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
+            End Date
+          </label>
+          <input 
+            className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors" 
+            type="date" 
+            value={endDate} 
+            onChange={e => setEndDate(e.target.value)} 
+            required 
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-neutral-700 mb-2">
+          Hourly Rate ($)
+        </label>
+        <input 
+          className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors" 
+          type="number" 
+          step="1" 
+          min="0" 
+          value={hourlyRate} 
+          onChange={e => setHourlyRate(parseFloat(e.target.value))} 
+          placeholder="Enter hourly rate" 
+          required 
+        />
+      </div>
       
-      <div className="border p-2 bg-gray-50 rounded">
-        <p className="text-sm text-gray-600">Client</p>
-        <p className="font-semibold">{client?.name || '—'}</p>
-        <p>{client?.address || '—'}</p>
+      <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+        <p className="text-sm font-medium text-neutral-700 mb-2">Client Information</p>
+        <p className="font-semibold text-neutral-900">{client?.name || '—'}</p>
+        <p className="text-neutral-600">{client?.address || '—'}</p>
+      </div>
+
+      <div className="flex items-start space-x-3">
+        <input
+          type="checkbox"
+          id="includeDetails"
+          checked={includeDetails}
+          onChange={() => setIncludeDetails(!includeDetails)}
+          className="mt-0.5 h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
+        />
+        <label htmlFor="includeDetails" className="text-sm text-neutral-700">
+          Include detailed entry breakdown on invoice PDF
+        </label>
+      </div>
+
+      <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 space-y-3">
+        <h4 className="text-lg font-semibold text-neutral-900">Invoice Summary</h4>
+        
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="text-neutral-600">Entries:</span>
+            <span className="ml-2 font-medium text-neutral-900">{filteredEntries.length}</span>
+          </div>
+          <div>
+            <span className="text-neutral-600">Total Hours:</span>
+            <span className="ml-2 font-medium text-neutral-900">{totalHours}</span>
+          </div>
+          <div>
+            <span className="text-neutral-600">Hourly Rate:</span>
+            <span className="ml-2 font-medium text-neutral-900">${hourlyRate}</span>
+          </div>
+          <div className="col-span-2 pt-2 border-t border-primary-200">
+            <span className="text-neutral-600">Invoice Total:</span>
+            <span className="ml-2 text-lg font-bold text-primary-700">${totalAmount.toFixed(2)}</span>
+          </div>
         </div>
 
-      <label className="flex items-center space-x-2 text-sm">
-        <input
-            type="checkbox"
-            checked={includeDetails}
-            onChange={() => setIncludeDetails(!includeDetails)}
-        />
-        <span>Include entry breakdown on invoice PDF</span>
-      </label>
-
-
-      <div className="bg-gray-50 p-4 rounded border">
-        <p><strong>Entries:</strong> {filteredEntries.length}</p>
-        <p><strong>Total Hours:</strong> {totalHours}</p>
-        <p><strong>Hourly Rate:</strong> ${hourlyRate}</p>
-        <p><strong>Invoice Total:</strong> ${totalAmount.toFixed(2)}</p>
-
         {filteredEntries.length > 0 && (
-            <div className="pt-2 border-t text-sm text-gray-700 space-y-1">
-            <p className="font-semibold">Included Entries:</p>
-            {filteredEntries.map((entry) => (
-                <div key={entry.id} className="flex justify-between">
-                <span>{formatDate(entry.date)} — {entry.notes || 'No notes'}</span>
-                <span>{entry.hours} hrs</span>
+          <div className="pt-4 border-t border-primary-200">
+            <p className="text-sm font-medium text-neutral-700 mb-3">Included Entries:</p>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {filteredEntries.map((entry) => (
+                <div key={entry.id} className="flex justify-between items-start text-xs bg-white rounded p-2 border border-primary-100">
+                  <span className="text-neutral-700">{formatDate(entry.date)} — {entry.notes || 'No notes'}</span>
+                  <span className="font-medium text-neutral-900 ml-2">{entry.hours} hrs</span>
                 </div>
-            ))}
+              ))}
             </div>
+          </div>
         )}
       </div>
 
       <button
         onClick={generateInvoice}
-        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
         disabled={!project_id || !startDate || !endDate || !client}
+        className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm disabled:cursor-not-allowed"
       >
         Generate Invoice PDF
       </button>

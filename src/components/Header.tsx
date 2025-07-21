@@ -4,7 +4,7 @@ import logo from "@/assets/SIS-logo-small.jpg"
 
 const Header: FC = () => {
   return (
-    <Card className="sticky top-0 z-50 border-none rounded-none shadow-medium bg-gradient-to-r from-primary-800 to-primary-700 text-white">
+    <Card className="sticky top-0 z-50 border-none rounded-xl shadow-medium bg-gradient-to-r from-primary-800 to-primary-700 text-white">
       <CardContent className="max-w-7xl mx-auto px-6 py-0">
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand Section */}
@@ -13,7 +13,7 @@ const Header: FC = () => {
               <img
                 src={logo}
                 alt="SIS logo"
-                className="h-10 w-10 rounded-lg border-2 border-white/20 shadow-soft bg-white/10 p-0.5"
+                className="h-25 w-40 rounded-lg border-2 border-white/20 shadow-soft bg-white/10 p-0.5"
               />
             </div>
             <div className="block">

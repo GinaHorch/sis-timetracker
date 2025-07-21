@@ -59,75 +59,109 @@ export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) =>
   };
 
   return (
-  <div className="space-y-4">
-     {isSaving && <Progress className="h-1 animate-pulse bg-blue-500" />}
+    <div className="space-y-6">
+      {isSaving && <Progress className="h-2 bg-primary-100" />}
 
-    {showClientForm ? (
-      <ClientForm onUpdate={(updatedClients: Client[]) => {
-        setClients(updatedClients);
-        setShowClientForm(false);
-        setClient_id(updatedClients[updatedClients.length - 1].id); // Auto-select new client
-      }} />
-    ) : (
-      <form onSubmit={handleSubmit} className="space-y-2">
-        <input
-          className="border p-1 w-full"
-          placeholder="Project name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <select
-          className="border p-1 w-full"
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-        >
-          <option value="2024–25">2024–25</option>
-          <option value="2025–26">2025–26</option>
-        </select>
-        <input
-          className="border p-1 w-full"
-          type="number"
-          step="0.01"
-          min="0"
-          placeholder="Hourly rate"
-          value={hourly_rate}
-          onChange={(e) => setHourly_rate(e.target.value)}
-          required
-        />
-        <textarea
-          className="border p-1 w-full"
-          placeholder="Description (optional)"
-          value={description} // Placeholder for description, can be set later
-          onChange={(e) => setDescription(e.target.value)}
-        />
+      {showClientForm ? (
+        <ClientForm onUpdate={(updatedClients: Client[]) => {
+          setClients(updatedClients);
+          setShowClientForm(false);
+          setClient_id(updatedClients[updatedClients.length - 1].id); // Auto-select new client
+        }} />
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Project Name
+            </label>
+            <input
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              placeholder="Enter project name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        {/* Client selection dropdown */}
-        <select
-          className="border p-1 w-full"
-          value={client_id}
-          onChange={(e) => setClient_id(e.target.value)}
-          required
-        >
-          <option value="">Select Client</option>
-          {clients.map(client => (
-            <option key={client.id} value={client.id}>{client.name}</option>
-          ))}
-        </select>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Financial Year
+            </label>
+            <select
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+            >
+              <option value="2024–25">2024–25</option>
+              <option value="2025–26">2025–26</option>
+            </select>
+          </div>
 
-        <button
-          type="button"
-          className="text-sm text-blue-600 underline"
-          onClick={() => setShowClientForm(true)}
-        >
-          Add New Client
-        </button>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Hourly Rate ($)
+            </label>
+            <input
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              value={hourly_rate}
+              onChange={(e) => setHourly_rate(e.target.value)}
+              required
+            />
+          </div>
 
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Add Project
-        </button>
-      </form>
-    )}
-  </div>
-);
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Description (optional)
+            </label>
+            <textarea
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors resize-none"
+              rows={3}
+              placeholder="Brief project description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Client
+            </label>
+            <select
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              value={client_id}
+              onChange={(e) => setClient_id(e.target.value)}
+              required
+            >
+              <option value="">Select a client</option>
+              {clients.map(client => (
+                <option key={client.id} value={client.id}>{client.name}</option>
+              ))}
+            </select>
+            
+            <button
+              type="button"
+              className="mt-2 text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
+              onClick={() => setShowClientForm(true)}
+            >
+              + Add New Client
+            </button>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button 
+              type="submit" 
+              disabled={isSaving}
+              className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:cursor-not-allowed"
+            >
+              {isSaving ? 'Adding Project...' : 'Add Project'}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
 }

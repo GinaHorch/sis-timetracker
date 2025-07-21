@@ -66,73 +66,78 @@ const filteredEntries = entries.filter(entry => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="min-h-screen bg-neutral-50">
       <Header />
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
-    <Card className="p-4">
-      <CardContent>
-    <h2 className="text-lg font-semibold mb-2">Add Project</h2>
-      <ProjectForm onAdd={setProjects} />   
-      <ProjectList projects={projects} />
-    
-    </CardContent>
-    </Card>
+        <Card className="border-none shadow-soft bg-white">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-neutral-900 mb-4">Add Project</h2>
+            <ProjectForm onAdd={setProjects} />   
+            <ProjectList projects={projects} />
+          </CardContent>
+        </Card>
 
-      <hr className="my-6" />
+        <Card className="border-none shadow-soft bg-white">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-neutral-900 mb-4">Time Entries</h2>
+            <TimeEntryForm
+              projects={projects}
+              onAdd={(newEntries) => {
+                setEntries(newEntries);
+                console.log('Dashboard received new entries');
+              }}
+              onEdit={handleEditEntry}
+              onDelete={handleDeleteEntry}
+              editingEntry={editingEntry}
+              setEditingEntry={setEditingEntry}
+              onCancel={() => setEditingEntry(null)}
+            />
 
-    <Card className="p-4">
-      <CardContent>
-      <h2 className="text-lg font-semibold mb-2">Time Entries</h2>
-      <TimeEntryForm
-        projects={projects}
-        onAdd={(newEntries) => {
-          setEntries(newEntries);   // Already good
-          console.log('Dashboard received new entries');
-        }}
-        onEdit={handleEditEntry}
-        onDelete={handleDeleteEntry}
-        editingEntry={editingEntry}
-        setEditingEntry={setEditingEntry}
-        onCancel={() => setEditingEntry(null)}
-      />
+            <div className="mt-6 flex gap-4 items-center flex-wrap">
+              <select className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                      value={filterProject} 
+                      onChange={(e) => setFilterProject(e.target.value)}>
+                <option value="">All Projects</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
 
-      <div className="mt-4 flex gap-4 items-center flex-wrap">
-        <select className="border p-1" value={filterProject} onChange={(e) => setFilterProject(e.target.value)}>
-          <option value="">All Projects</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
+              <select className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" 
+                      value={filterYear} 
+                      onChange={(e) => setFilterYear(e.target.value)}>
+                <option value="">All Financial Years</option>
+                {[...new Set(projects.map(p => p.financial_year))].map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
 
-        <select className="border p-1" value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
-          <option value="">All Financial Years</option>
-          {[...new Set(projects.map(p => p.financial_year))].map(year => (
-            <option key={year} value={year}>{year}</option>
-          ))}
-        </select>
+              <button onClick={exportCSV} 
+                      className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                Export CSV
+              </button>
+            </div>
+        
+            <div className="bg-white shadow-soft rounded-xl border border-neutral-200 p-6 mt-6">
+              <TimeSheetTable 
+                entries={filteredEntries} 
+                projects={projects} 
+                onEdit={handleEditEntry} 
+                onDelete={handleDeleteEntry} 
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-        <button onClick={exportCSV} className="bg-blue-600 text-white px-4 py-1 rounded">Export CSV</button>
+        <Card className="border-none shadow-soft bg-white">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-neutral-900 mb-4">Generate Invoice</h2>
+            <InvoiceForm />
+          </CardContent>
+        </Card>
       </div>
-    
-    <div className="bg-white shadow-md rounded-2xl p-4 my-4">
-      <TimeSheetTable 
-          entries={filteredEntries} 
-          projects={projects} 
-          onEdit={handleEditEntry} 
-          onDelete={handleDeleteEntry} />
     </div>
-      </CardContent>
-    </Card>
-
-   <Card className="p-4">
-      <CardContent>
-      <h2 className="text-lg font-semibold mb-2">Generate Invoice</h2>
-      <InvoiceForm />
-      </CardContent>
-    </Card>
-      </div>
-  </div>
   );
 }
 
