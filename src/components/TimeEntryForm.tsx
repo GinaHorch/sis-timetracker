@@ -6,11 +6,13 @@ interface TimeEntryFormProps {
   projects: Project[];
   onAdd: (entries: TimeEntry[]) => void;
   onEdit?: (entry: TimeEntry) => void;
+  onDelete?: (id: string) => Promise<void>;
   editingEntry: TimeEntry | null;
+  setEditingEntry: React.Dispatch<React.SetStateAction<TimeEntry | null>>;
   onCancel?: () => void;
 }
 
-export default function TimeEntryForm({ projects, onAdd, onEdit, editingEntry, onCancel }: TimeEntryFormProps) {
+export default function TimeEntryForm({ projects, onAdd, onEdit, onDelete, editingEntry, setEditingEntry, onCancel }: TimeEntryFormProps) {
   const [project_id, setProject_id] = useState('');
   const [date, setDate] = useState('');
   const [hours, setHours] = useState('');

@@ -4,16 +4,16 @@ import ProjectList from '../components/ProjectList';
 import TimeEntryForm from '../components/TimeEntryForm';
 import TimeSheetTable from '../components/TimeSheetTable';
 import InvoiceForm from '../components/InvoiceForm';
-import { fetchProjects } from '../services/projectService';
-import { fetchEntries, deleteEntry } from '../services/timeService';
+import { fetchProjects, Project } from '../services/projectService';
+import { fetchEntries, deleteEntry, TimeEntry } from '../services/timeService';
 import { saveAs } from 'file-saver';
 
-export default function Dashboard() {
-  const [projects, setProjects] = useState([]);
-  const [entries, setEntries] = useState([]);
-  const [filterProject, setFilterProject] = useState('');
-  const [filterYear, setFilterYear] = useState('');
-  const [editingEntry, setEditingEntry] = useState(null);
+const Dashboard: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [filterProject, setFilterProject] = useState<string>('');
+  const [filterYear, setFilterYear] = useState<string>('');
+  const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
 
   useEffect(() => {
   const loadData = async () => {
@@ -32,26 +32,26 @@ const filteredEntries = entries.filter(entry => {
     const project = projects.find(p => p.id === entry.project_id);
     return (
       (!filterProject || entry.project_id === filterProject) &&
-      (!filterYear || project?.financialYear === filterYear)
+      (!filterYear || project?.financial_year === filterYear)
     );
   });
 
-  const handleDeleteEntry = async (id) => {
+  const handleDeleteEntry = async (id: string): Promise<void> => {
     await deleteEntry(id);
     const updated = await fetchEntries();
     setEntries(updated);
   };
 
-  const handleEditEntry = (entry) => {
+  const handleEditEntry = (entry: TimeEntry): void => {
     setEditingEntry(entry);
   };
-  const exportCSV = () => {
+  const exportCSV = (): void => {
     const rows = filteredEntries.map(e => {
       const project = projects.find(p => p.id === e.project_id);
       return {
         Date: e.date,
         Project: project?.name || '',
-        FinancialYear: project?.financialYear || '',
+        FinancialYear: project?.financial_year || '',
         Hours: e.hours,
         Notes: e.notes
       };
@@ -113,3 +113,5 @@ const filteredEntries = entries.filter(entry => {
     </div>
   );
 }
+
+export default Dashboard;
