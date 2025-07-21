@@ -6,6 +6,7 @@ import { Project } from '../services/projectService';
 import { Client } from '../services/clientService';
 import { TimeEntry } from '../services/timeService';
 import { toDataURL } from '@/utils/image';
+import sisLogo from '/SIS-logo-small.jpg'; // Import the logo directly
 
 interface InvoiceFormProps {
   projects: Project[];
@@ -57,17 +58,24 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
 
     const today = new Date();
     const invoiceNumber = await getNextInvoiceNumber();
-    const imageData = await toDataURL('./SIS-logo-small.jpg'); // Load image data for the logo
 
-    // Add SIS logo
-    doc.addImage(
-        imageData, 
-        'JPEG', 
-        leftMargin, 
-        y, 
-        40, 
-        30
-    );
+    // Load SIS logo with proper error handling
+    try {
+      const imageData = await toDataURL(sisLogo); // Use imported logo path
+      
+      // Add SIS logo
+      doc.addImage(
+          imageData, 
+          'JPEG', 
+          leftMargin, 
+          y, 
+          40, 
+          30
+      );
+    } catch (error) {
+      console.warn('Could not load SIS logo:', error);
+      // Continue without logo if it fails to load
+    }
 
     // Invoice title
     doc.setFontSize(16);
