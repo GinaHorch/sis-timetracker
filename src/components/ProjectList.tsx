@@ -3,20 +3,12 @@ import { fetchClients, Client } from '../services/clientService';
 import { Project } from '../services/projectService';
 
 interface ProjectListProps {
-  projects: Project[]
+  projects: Project[];
+  clients: Client[];
 }
 
-export default function ProjectList({ projects }: ProjectListProps) {
-  const [clients, setClients] = useState<Client[]>([]);
-
-  useEffect(() => {
-    const loadClients = async () => {
-      const data: Client[] = await fetchClients();
-      setClients(data);
-    };
-    loadClients();
-  }, []);
-
+export default function ProjectList({ projects, clients }: ProjectListProps) {
+  
   const getClientName = (id: string): string => 
     clients.find((c) => c.id === id)?.name || 'No client';
 

@@ -7,25 +7,22 @@ import { Project } from '../services/projectService';
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner"
 
-export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) => void }) {
+interface ProjectFormProps {
+  onAdd: (projects: Project[]) => void;
+  clients: Client[];
+  setClients: React.Dispatch<React.SetStateAction<Client[]>>;
+}
+
+export default function ProjectForm({ onAdd, clients, setClients }: ProjectFormProps) {
   const [name, setName] = useState('');
   const [year, setYear] = useState('2025–26');
   const [hourly_rate, setHourly_rate] = useState('');
-  const [clients, setClients] = useState<Client[]>([]);
   const [client_id, setClient_id] = useState<string>('');
   const [showClientForm, setShowClientForm] = useState(false);
   const [description, setDescription] = useState(''); // Optional description field
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-  const loadClients = async () => {
-    const data: Client[] = await fetchClients();
-    setClients(data);
-  };
-  loadClients();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
     try {

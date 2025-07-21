@@ -6,6 +6,7 @@ import TimeSheetTable from '../components/TimeSheetTable';
 import InvoiceForm from '../components/InvoiceForm';
 import { fetchProjects, Project } from '../services/projectService';
 import { fetchEntries, deleteEntry, TimeEntry } from '../services/timeService';
+import { fetchClients, Client } from '../services/clientService';
 import { saveAs } from 'file-saver';
 import Header from '../components/Header';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,18 +14,21 @@ import { Card, CardContent } from '@/components/ui/card';
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [entries, setEntries] = useState<TimeEntry[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [filterProject, setFilterProject] = useState<string>('');
   const [filterYear, setFilterYear] = useState<string>('');
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
 
   useEffect(() => {
   const loadData = async () => {
-    const [projectData, entryData] = await Promise.all([
+    const [projectData, entryData, clientData] = await Promise.all([
       fetchProjects(),
-      fetchEntries()
+      fetchEntries(),
+      fetchClients()
     ]);
     setProjects(projectData);
     setEntries(entryData);
+    setClients(clientData);
   };
 
   loadData();
@@ -73,8 +77,8 @@ const filteredEntries = entries.filter(entry => {
         <Card className="border-none shadow-soft bg-white">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold text-neutral-900 mb-4">Add Project</h2>
-            <ProjectForm onAdd={setProjects} />   
-            <ProjectList projects={projects} />
+            <ProjectForm onAdd={setProjects} clients={clients} setClients={setClients} />   
+            <ProjectList projects={projects} clients={clients}/>
           </CardContent>
         </Card>
 
@@ -133,7 +137,7 @@ const filteredEntries = entries.filter(entry => {
         <Card className="border-none shadow-soft bg-white">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold text-neutral-900 mb-4">Generate Invoice</h2>
-            <InvoiceForm />
+            <InvoiceForm projects={projects} clients={clients} entries={entries}/>
           </CardContent>
         </Card>
       </div>

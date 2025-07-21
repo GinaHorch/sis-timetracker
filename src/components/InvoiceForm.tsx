@@ -2,16 +2,20 @@ import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import { formatDate } from '../utils/date';
 import { getNextInvoiceNumber } from '../services/invoiceService';
-import { fetchProjects, Project } from '../services/projectService';
-import { fetchClients, Client } from '../services/clientService';
-import { fetchEntries, TimeEntry } from '../services/timeService';
+import { Project } from '../services/projectService';
+import { Client } from '../services/clientService';
+import { TimeEntry } from '../services/timeService';
+import { toDataURL } from '@/utils/image';
 
-export default function InvoiceForm() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
+interface InvoiceFormProps {
+  projects: Project[];
+  clients: Client[];
+  entries: TimeEntry[];
+}
+export default function InvoiceForm({ projects, clients, entries }: InvoiceFormProps) {
+  
   const [project_id, setProject_id] = useState<string>('');
-
+  
   const today = new Date();
   const defaultEnd = today.toISOString().slice(0, 10);
   const defaultStartDate = new Date(today);
@@ -26,20 +30,6 @@ export default function InvoiceForm() {
   const selectedProject = projects.find((p) => p.id === project_id);
   const client = clients.find((c) => c.id === selectedProject?.client_id);
     
-  useEffect(() => {
-  const loadData = async () => {
-    const [projectData, entryData, clientData] = await Promise.all([
-      fetchProjects(),
-      fetchEntries(),
-      fetchClients()
-    ]);
-    setProjects(projectData);
-    setEntries(entryData);
-    setClients(clientData);
-  };
-    loadData();
-    }, []);
-
   useEffect(() => {
   if (selectedProject?.hourly_rate) {
     setHourlyRate(selectedProject.hourly_rate);
@@ -67,10 +57,11 @@ export default function InvoiceForm() {
 
     const today = new Date();
     const invoiceNumber = await getNextInvoiceNumber();
+    const imageData = await toDataURL('./SIS-logo-small.jpg'); // Load image data for the logo
 
     // Add SIS logo
     doc.addImage(
-        './SIS-logo-small.jpg', 
+        imageData, 
         'JPEG', 
         leftMargin, 
         y, 
