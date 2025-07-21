@@ -5,7 +5,7 @@ import ClientForm from './ClientForm';
 import { Client } from '../services/clientService';
 import { Project } from '../services/projectService';
 import { Progress } from "@/components/ui/progress";
-import { toast } from 'sonner';
+import { toast } from "sonner"
 
 export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) => void }) {
   const [name, setName] = useState('');
@@ -60,7 +60,7 @@ export default function ProjectForm({ onAdd }: { onAdd: (projects: Project[]) =>
 
   return (
   <div className="space-y-4">
-     {isSaving && <Progress value={100} className="h-1 bg-blue-500" />}
+     {isSaving && <Progress className="h-1 animate-pulse bg-blue-500" />}
 
     {showClientForm ? (
       <ClientForm onUpdate={(updatedClients: Client[]) => {
