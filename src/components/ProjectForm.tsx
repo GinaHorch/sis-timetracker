@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchProjects, addProject } from '../services/projectService';
+import { fetchProjects, updateProject, addProject } from '../services/projectService';
 import { fetchClients } from '../services/clientService';
 import ClientForm from './ClientForm';
 import { Client } from '../services/clientService';
@@ -8,12 +8,17 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner"
 
 interface ProjectFormProps {
+  existingProject?: Project | null; // Optional prop for editing existing projects
+  onSave: (project: Project) => void;
   onAdd: (projects: Project[]) => void;
+  onCancel?: () => void;
   clients: Client[];
   setClients: React.Dispatch<React.SetStateAction<Client[]>>;
 }
 
-export default function ProjectForm({ onAdd, clients, setClients }: ProjectFormProps) {
+export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, clients, setClients }: ProjectFormProps) {
+  const isEditing = !!existingProject;
+  
   const [name, setName] = useState('');
   const [year, setYear] = useState('2025–26');
   const [hourly_rate, setHourly_rate] = useState('');
@@ -22,34 +27,60 @@ export default function ProjectForm({ onAdd, clients, setClients }: ProjectFormP
   const [description, setDescription] = useState(''); // Optional description field
   const [isSaving, setIsSaving] = useState(false);
 
+  useEffect(() => {
+    if (isEditing && existingProject) {
+      setName(existingProject.name || '');
+      setYear(existingProject.financial_year || '2025–26');
+      setHourly_rate(String(existingProject.hourly_rate || ''));
+      setClient_id(existingProject.client_id);
+      setDescription(existingProject.description || '');
+    }
+  }, [existingProject]);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
-    try {
-      const newProject = {
-        name,
-        financial_year: year,
-        hourly_rate: parseFloat(hourly_rate),
-        client_id: client_id,
-        created_at: new Date().toISOString(),
-        description: '', // Optional field, can be set later
-      };
 
-      const saved = await addProject(newProject);
+    const projectPayload = {
+      id: existingProject?.id, // Use existing ID if editing
+      name,
+      financial_year: year,
+      hourly_rate: parseFloat(hourly_rate),
+      client_id,
+      description: description || '', // Optional field
+    }
+
+    try {
+      if (isEditing) {
+        const updated = await updateProject(projectPayload as Project);
+        if (updated) {
+          onSave(updated); // now matches expected type
+          toast.success('Project updated!');
+        } else {
+          toast.error('Failed to update project');
+        }
+      } else {      
+
+      const saved = await addProject(projectPayload);
+
       if (saved) {
         const updatedProjects = await fetchProjects();
         onAdd(updatedProjects);
-        setName('');
-        setHourly_rate('');
-        setClient_id('');
-        setDescription(''); // Reset description field
         toast.success('Project added successfully!');
       } else {
         toast.error('Failed to add project');
       }
+    }
+    // Clear form or close modal    
+    setName('');
+    setHourly_rate('');
+    setClient_id('');
+    setDescription(''); // Reset description field
+    if (onCancel) onCancel(); // Close form if applicable    
+      
     } catch (error) {
-      console.error('Error adding project:', error);
-      toast.error('An error occurred while adding the project');
+      console.error('Error saving project:', error);
+      toast.error('An error occurred while saving the project');
     } finally {
       setIsSaving(false);
     }

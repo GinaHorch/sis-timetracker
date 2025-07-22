@@ -4,10 +4,11 @@ import { Project } from '../services/projectService';
 
 interface ProjectListProps {
   projects: Project[];
+  onEdit: (project: Project) => void;
   clients: Client[];
 }
 
-export default function ProjectList({ projects, clients }: ProjectListProps) {
+export default function ProjectList({ projects, onEdit, clients }: ProjectListProps) {
   
   const getClientName = (id: string): string => 
     clients.find((c) => c.id === id)?.name || 'No client';
@@ -34,6 +35,12 @@ export default function ProjectList({ projects, clients }: ProjectListProps) {
                 </svg>
                 Client: <span className="font-medium text-neutral-700 ml-1">{getClientName(p.client_id)}</span>
               </div>
+              <button 
+                className="mt-3 inline-flex items-center px-3 py-1.5 text-sm font-medium text-primary-700 bg-primary-100 hover:bg-primary-200 rounded-lg transition-colors"
+                onClick={() => onEdit(p)}
+              >
+                View / Edit
+              </button>
             </li>
           ))}
         </ul>

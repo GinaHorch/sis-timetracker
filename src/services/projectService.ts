@@ -39,3 +39,18 @@ export async function addProject(project: Omit<Project, 'id' | 'created_at'>): P
 
   return data[0] as Project;
 }
+
+export async function updateProject(project: Project): Promise<Project | null> {
+  const { data, error } = await supabase
+    .from('projects')
+    .update(project)
+    .eq('id', project.id)
+    .select();
+
+  if (error || !data || data.length === 0) {
+    console.error('Error updating project:', error?.message);
+    return null;
+  }
+
+  return data[0] as Project;
+}
