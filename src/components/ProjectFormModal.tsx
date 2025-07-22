@@ -71,7 +71,7 @@ export default function ProjectFormModal({ open, onClose, project, clients, onSa
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-white p-6 rounded-2xl shadow-xl z-50">
         <DialogHeader>
           <DialogTitle>Edit Project</DialogTitle>
           <DialogDescription>Update project details</DialogDescription>
