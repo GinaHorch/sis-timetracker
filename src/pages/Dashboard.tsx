@@ -78,8 +78,6 @@ const filteredEntries = entries.filter(entry => {
         <Card className="border-none shadow-soft bg-white">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold text-neutral-900 mb-4">Add Project</h2>
-            <ProjectForm onAdd={setProjects} onSave={() => {}} clients={clients} setClients={setClients} />
-            {editingProject && (
               <ProjectForm
                 existingProject={editingProject}
                 onSave={async () => {
@@ -87,12 +85,11 @@ const filteredEntries = entries.filter(entry => {
                   setProjects(updatedProjects);
                   setEditingProject(null); // Close the form
                 }}
-                onAdd={() => {}}
+                onAdd={setProjects}
                 clients={clients}
                 setClients={setClients}
                 onCancel={() => setEditingProject(null)}
-              />
-            )}   
+              />            
             <ProjectList projects={projects} onEdit={setEditingProject} clients={clients}/>
           </CardContent>
         </Card>

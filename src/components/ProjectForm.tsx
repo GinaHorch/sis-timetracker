@@ -185,7 +185,9 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
               disabled={isSaving}
               className="flex-1 bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:cursor-not-allowed"
             >
-              {isSaving ? 'Adding Project...' : 'Add Project'}
+              {isSaving 
+                ? (isEditing ? 'Saving Changes...' : 'Adding Project...') 
+                : (isEditing ? 'Update Project' : 'Add Project')}
             </button>
           </div>
         </form>
