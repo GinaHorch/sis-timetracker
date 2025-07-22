@@ -10,6 +10,7 @@ import { fetchClients, Client } from '../services/clientService';
 import { saveAs } from 'file-saver';
 import Header from '../components/Header';
 import { Card, CardContent } from '@/components/ui/card';
+import ProjectFormModal from '../components/ProjectFormModal';
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -78,19 +79,29 @@ const filteredEntries = entries.filter(entry => {
         <Card className="border-none shadow-soft bg-white">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold text-neutral-900 mb-4">Add Project</h2>
-              <ProjectForm
-                existingProject={editingProject}
-                onSave={async () => {
-                  const updatedProjects = await fetchProjects();
-                  setProjects(updatedProjects);
-                  setEditingProject(null); // Close the form
-                }}
-                onAdd={setProjects}
-                clients={clients}
-                setClients={setClients}
-                onCancel={() => setEditingProject(null)}
-              />            
+
+              {!editingProject && (
+            <ProjectForm
+              onAdd={setProjects}
+              onSave={() => {}} // not used in add mode
+              clients={clients}
+              setClients={setClients}
+            />
+          )}
+
             <ProjectList projects={projects} onEdit={setEditingProject} clients={clients}/>
+
+            <ProjectFormModal
+              open={!!editingProject}
+              onClose={() => setEditingProject(null)}
+              project={editingProject}
+              clients={clients}
+              onSave={async () => {
+                const updated = await fetchProjects();
+                setProjects(updated);
+                setEditingProject(null);
+              }}
+            />
           </CardContent>
         </Card>
 
