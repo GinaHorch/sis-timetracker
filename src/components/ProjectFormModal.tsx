@@ -71,10 +71,10 @@ export default function ProjectFormModal({ open, onClose, project, clients, onSa
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg bg-white p-6 rounded-2xl shadow-xl z-50">
-        <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
-          <DialogDescription>Update project details</DialogDescription>
+      <DialogContent className="bg-white border border-neutral-300 shadow-2xl max-w-lg w-full">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-xl font-semibold text-neutral-900">Edit Project</DialogTitle>
+          <DialogDescription className="text-sm text-neutral-600">Update project details</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -136,7 +136,15 @@ export default function ProjectFormModal({ open, onClose, project, clients, onSa
             </select>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex gap-3 pt-4">
+            <button 
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 border border-neutral-300 text-neutral-700 rounded-lg font-medium hover:bg-neutral-50 transition-colors"
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
             <button 
               type="submit" 
               className="bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm disabled:cursor-not-allowed"
