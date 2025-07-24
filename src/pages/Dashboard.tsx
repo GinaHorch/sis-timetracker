@@ -11,6 +11,8 @@ import { saveAs } from 'file-saver';
 import Header from '../components/Header';
 import { Card, CardContent } from '@/components/ui/card';
 import ProjectFormModal from '../components/ProjectFormModal';
+import { toast } from 'sonner';
+import { isInvoiceDay } from '../utils/invoiceReminder'; // Assuming you have a utility function to check if it's an invoice day
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -35,6 +37,15 @@ const Dashboard: React.FC = () => {
 
   loadData();
 }, []);
+
+  useEffect(() => {
+    if (isInvoiceDay('2025-07-16')) {
+      toast('Today is your fortnightly invoice day!', {
+        icon: '💰',
+        duration: 5000,
+      });
+    }
+  }, []);
 
 const filteredEntries = entries.filter(entry => {
     const project = projects.find(p => p.id === entry.project_id);
