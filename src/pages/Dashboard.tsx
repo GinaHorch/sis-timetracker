@@ -22,6 +22,7 @@ const Dashboard: React.FC = () => {
   const [filterYear, setFilterYear] = useState<string>('');
   const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [showReminder, setShowReminder] = useState(false);
 
   useEffect(() => {
   const loadData = async () => {
@@ -39,13 +40,25 @@ const Dashboard: React.FC = () => {
 }, []);
 
   useEffect(() => {
-    if (isInvoiceDay('2025-07-16')) {
-      toast('Today is your fortnightly invoice day!', {
-        icon: '💰',
-        duration: 5000,
-      });
-    }
-  }, []);
+    const checkInvoiceDue = () => {
+      const projectsWithBilling = projects.filter(p => p.billing_start_date && p.billing_cycle);
+      const today = new Date();
+
+      for (const p of projectsWithBilling) {
+        // Type guard: we know billing_start_date exists because of the filter above
+        if (p.billing_start_date && p.billing_cycle) {
+          const startDate = new Date(p.billing_start_date);
+          const isDue = isInvoiceDay(startDate, p.billing_cycle, today);
+          if (isDue) {
+            setShowReminder(true);
+            break; // one reminder is enough
+          }
+        }
+      }
+    };
+
+    checkInvoiceDue();
+  }, [projects]);
 
 const filteredEntries = entries.filter(entry => {
     const project = projects.find(p => p.id === entry.project_id);
@@ -85,6 +98,31 @@ const filteredEntries = entries.filter(entry => {
   return (
     <div className="min-h-screen bg-neutral-50">
       <Header />
+      {showReminder && (
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start justify-between">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-amber-800">Invoice Due Reminder</p>
+                <p className="text-sm text-amber-700 mt-1">It's time to generate invoices for your active projects!</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowReminder(false)}
+              className="flex-shrink-0 ml-4 text-amber-600 hover:text-amber-800 transition-colors"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
         <Card className="border-none shadow-soft bg-white">

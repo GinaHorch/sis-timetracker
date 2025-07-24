@@ -23,6 +23,8 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
   const [year, setYear] = useState('2025–26');
   const [hourly_rate, setHourly_rate] = useState('');
   const [client_id, setClient_id] = useState<string>('');
+  const [billing_start_date, setBilling_start_date] = useState('');
+  const [billing_cycle, setBilling_cycle] = useState('fortnightly');
   const [showClientForm, setShowClientForm] = useState(false);
   const [description, setDescription] = useState(''); // Optional description field
   const [isSaving, setIsSaving] = useState(false);
@@ -34,6 +36,8 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
       setHourly_rate(String(existingProject.hourly_rate || ''));
       setClient_id(existingProject.client_id);
       setDescription(existingProject.description || '');
+      setBilling_start_date(existingProject.billing_start_date || '');
+      setBilling_cycle(existingProject.billing_cycle || 'fortnightly');
     }
   }, [existingProject]);
 
@@ -48,6 +52,8 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
       hourly_rate: parseFloat(hourly_rate),
       client_id,
       description: description || '', // Optional field
+      billing_start_date: billing_start_date || undefined, // Optional field
+      billing_cycle: billing_cycle || 'fortnightly', // Default to fortnightly
     }
 
     try {
@@ -76,6 +82,8 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
     setHourly_rate('');
     setClient_id('');
     setDescription(''); // Reset description field
+    setBilling_start_date('');
+    setBilling_cycle('fortnightly');
     if (onCancel) onCancel(); // Close form if applicable    
       
     } catch (error) {
@@ -139,6 +147,33 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
               onChange={(e) => setHourly_rate(e.target.value)}
               required
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Billing Start Date (optional)
+            </label>
+            <input
+              type="date"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              value={billing_start_date}
+              onChange={(e) => setBilling_start_date(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
+              Billing Cycle
+            </label>
+            <select
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors"
+              value={billing_cycle}
+              onChange={(e) => setBilling_cycle(e.target.value)}
+            >
+              <option value="fortnightly">Fortnightly</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
           </div>
 
           <div>

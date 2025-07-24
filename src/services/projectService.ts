@@ -8,6 +8,8 @@ export interface Project {
   client_id: string; // Foreign key to the client
   created_at: string;
   description?: string; // Optional description field
+  billing_start_date?: string; // Optional billing start date
+  billing_cycle?: string; // Optional billing cycle (weekly, fortnightly, monthly)
 }
 
 // Fetch all projects

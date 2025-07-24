@@ -28,6 +28,8 @@ export default function ProjectFormModal({ open, onClose, project, clients, onSa
   const [hourly_rate, setHourly_rate] = useState(String(project.hourly_rate));
   const [client_id, setClient_id] = useState(project.client_id);
   const [description, setDescription] = useState(project.description || '');
+  const [billing_start_date, setBilling_start_date] = useState(project.billing_start_date || '');
+  const [billing_cycle, setBilling_cycle] = useState(project.billing_cycle || 'fortnightly');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -36,6 +38,8 @@ export default function ProjectFormModal({ open, onClose, project, clients, onSa
     setHourly_rate(String(project.hourly_rate));
     setClient_id(project.client_id);
     setDescription(project.description || '');
+    setBilling_start_date(project.billing_start_date || '');
+    setBilling_cycle(project.billing_cycle || 'fortnightly');
   }, [project]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -48,7 +52,9 @@ export default function ProjectFormModal({ open, onClose, project, clients, onSa
       financial_year: year,
       hourly_rate: parseFloat(hourly_rate),
       client_id,
-      description,
+      description: description || '', // Optional field
+      billing_start_date: billing_start_date || undefined,
+      billing_cycle: billing_cycle || 'fortnightly',
       created_at: project.created_at, // Keep original created_at
     };
 
@@ -111,6 +117,29 @@ export default function ProjectFormModal({ open, onClose, project, clients, onSa
               onChange={(e) => setHourly_rate(e.target.value)} 
               required 
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">Billing Start Date</label>
+            <input 
+              type="date" 
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors" 
+              value={billing_start_date} 
+              onChange={(e) => setBilling_start_date(e.target.value)} 
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-2">Billing Cycle</label>
+            <select 
+              className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors" 
+              value={billing_cycle} 
+              onChange={(e) => setBilling_cycle(e.target.value)}
+            >
+              <option value="fortnightly">Fortnightly</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
           </div>
 
           <div>
