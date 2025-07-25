@@ -12,7 +12,8 @@ import Header from '../components/Header';
 import { Card, CardContent } from '@/components/ui/card';
 import ProjectFormModal from '../components/ProjectFormModal';
 import { toast } from 'sonner';
-import { isInvoiceDay } from '../utils/invoiceReminder'; // Assuming you have a utility function to check if it's an invoice day
+import { isInvoiceDay } from '../utils/invoiceReminder';
+import InvoiceList from '../components/InvoiceList';
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -212,6 +213,7 @@ const filteredEntries = entries.filter(entry => {
             <InvoiceForm projects={projects} clients={clients} entries={entries}/>
           </CardContent>
         </Card>
+        <InvoiceList projects={projects} clients={clients} />
       </div>
     </div>
   );
