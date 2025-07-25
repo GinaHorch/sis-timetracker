@@ -36,3 +36,70 @@ export async function reserveNextInvoiceNumber(): Promise<{ invoiceNumber: strin
 
   return true;
 }
+
+export async function saveInvoiceToSupabase({
+  project_id,
+  client_id,
+  invoice_number,
+  start_date,
+  end_date,
+  total_amount,
+  total_hours,
+  pdfBlob,
+}: {
+  project_id: string;
+  client_id: string;
+  invoice_number: string;
+  start_date: string;
+  end_date: string;
+  total_amount: number;
+  total_hours: number;
+  pdfBlob: Blob;
+}): Promise<string | null> {
+  const filePath = `${project_id}/${invoice_number}.pdf`;
+
+  // Upload PDF to Supabase Storage
+  const { data: storageData, error: uploadError } = await supabase
+    .storage
+    .from('invoices')
+    .upload(filePath, pdfBlob, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: 'application/pdf',
+    });
+
+  if (uploadError) {
+    console.error('Upload error:', uploadError.message);
+    return null;
+  }
+
+  // Get public URL
+  const { data: urlData } = supabase
+    .storage
+    .from('invoices')
+    .getPublicUrl(filePath);
+  const publicUrl = urlData?.publicUrl;
+
+  // Save invoice metadata
+  const { error: insertError } = await supabase
+    .from('invoices')
+    .insert([
+      {
+        project_id,
+        client_id,
+        invoice_number,
+        start_date,
+        end_date,
+        total_amount,
+        total_hours,
+        pdf_url: publicUrl,
+      },
+    ]);
+
+  if (insertError) {
+    console.error('DB insert error:', insertError.message);
+    return null;
+  }
+
+  return publicUrl;
+}

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import { formatDate } from '../utils/date';
-import { reserveNextInvoiceNumber, incrementInvoiceCounter } from '../services/invoiceService';
+import { reserveNextInvoiceNumber, incrementInvoiceCounter, saveInvoiceToSupabase } from '../services/invoiceService';
 import { Project } from '../services/projectService';
 import { Client } from '../services/clientService';
 import { TimeEntry } from '../services/timeService';
 import { toDataURL } from '@/utils/image';
-import sisLogo from '/SIS-logo-small.jpg'; // Import the logo directly
+import sisLogo from '/SIS-logo-small.jpg';
 import { toast } from 'sonner';
 import { supabase } from '../supabaseClient';
 
@@ -47,86 +47,111 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
   const end = new Date(endDate);
 
   return entryDate >= start && entryDate <= end;
-});
+  });
 
   const totalHours = filteredEntries.reduce((sum, e) => sum + e.hours, 0);
   const totalAmount = totalHours * hourlyRate;
 
   const generateInvoice = async () => {
-
-    const result = await reserveNextInvoiceNumber();
-    if (!result || result.invoiceNumber === 'SIS-ERROR') {
-      toast.error('Failed to generate invoice number');
+    if (!project_id || !startDate || !endDate || !client) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    const { invoiceNumber, next } = result;
+    try {
+      // Step 1: Reserve invoice number
+      const result = await reserveNextInvoiceNumber();
+      if (!result || result.invoiceNumber === 'SIS-ERROR') {
+        toast.error('Failed to generate invoice number');
+        return;
+      }
 
-    // Check if invoice already exists for this project & date range
-    const { data: existingInvoice, error: checkError } = await supabase
-      .from('invoices')
-      .select('id')
-      .eq('project_id', project_id)
-      .eq('start_date', startDate)
-      .eq('end_date', endDate)
-      .maybeSingle();
+      const { invoiceNumber, next } = result;
 
-    if (checkError) {
-      toast.error('Error checking for existing invoice');
-      console.error(checkError.message);
-      return;
-    }
+      // Step 2: Check for duplicate invoices
+      const { data: existingInvoice, error: checkError } = await supabase
+        .from('invoices')
+        .select('id')
+        .eq('project_id', project_id)
+        .eq('start_date', startDate)
+        .eq('end_date', endDate)
+        .maybeSingle();
 
-    if (existingInvoice) {
-      toast.error('Invoice already exists for this project and period.');
-      return;
-    }
+      if (checkError) {
+        toast.error('Error checking for existing invoice');
+        console.error(checkError.message);
+        return;
+      }
 
-    // Insert the invoice
-    const { error: insertError } = await supabase.from('invoices').insert([
-      {
+      if (existingInvoice) {
+        toast.error('Invoice already exists for this project and period.');
+        return;
+      }
+
+      // Step 3: Generate PDF as blob
+      const pdfBlob = await generatePDFBlob(invoiceNumber);
+      
+      // Step 4: Save to Supabase (storage + database)
+      const publicUrl = await saveInvoiceToSupabase({
+        project_id: project_id,
+        client_id: client.id,
         invoice_number: invoiceNumber,
-        project_id,
-        client_id: client?.id,
         start_date: startDate,
         end_date: endDate,
-        total: totalAmount,
-        hours: totalHours,
+        total_amount: totalAmount,
+        total_hours: totalHours,
+        pdfBlob: pdfBlob,
+      });
+
+      if (publicUrl) {
+        // Step 5: Increment counter only after successful save
+        const success = await incrementInvoiceCounter(next);
+        if (!success) {
+          toast.warning('Invoice saved, but counter not incremented!');
+        }
+
+        // Step 6: Show success with download link
+        toast.success(
+          <div>
+            Invoice generated successfully!{' '}
+            <a
+              href={publicUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline text-primary-600 hover:text-primary-700 ml-2"
+            >
+              Download PDF
+            </a>
+          </div>
+        );
+      } else {
+        toast.error('Failed to save invoice');
       }
-    ]);
 
-    if (insertError) {
-      toast.error('Failed to save invoice to database');
-      console.error(insertError.message);
-      return;
+    } catch (error) {
+      console.error('Invoice generation failed:', error);
+      toast.error('Failed to generate invoice');
     }
+  };
 
-    // Safe to increment now with the next value
-    const success = await incrementInvoiceCounter(next);
-    if (!success) {
-      toast.warning('Invoice saved, but counter not incremented!');
-    }
-
-  // Continue with PDF generation
-
+  const generatePDFBlob = async (invoiceNumber: string): Promise<Blob> => {
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = 210;
     const leftMargin = 20;
     let y = 20;
 
-
     // Load SIS logo with proper error handling
     try {
-      const imageData = await toDataURL(sisLogo); // Use imported logo path
+      const imageData = await toDataURL(sisLogo);
       
       // Add SIS logo
       doc.addImage(
-          imageData, 
-          'JPEG', 
-          leftMargin, 
-          y, 
-          40, 
-          30
+        imageData, 
+        'JPEG', 
+        leftMargin, 
+        y, 
+        40, 
+        30
       );
     } catch (error) {
       console.warn('Could not load SIS logo:', error);
@@ -160,14 +185,14 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
 
     // Business info (right side)
     let businessInfo = [
-        'ABN: 72 144 906 902',
-        'PO Box 635',
-        'Scarborough WA 6019',
-        'Email: social.insight.solutions@gmail.com'
+      'ABN: 72 144 906 902',
+      'PO Box 635',
+      'Scarborough WA 6019',
+      'Email: social.insight.solutions@gmail.com'
     ];
    
     businessInfo.forEach((line, i) => {
-        doc.text(line, pageWidth - leftMargin, y + 6 + (i * 6), { align: 'right' });
+      doc.text(line, pageWidth - leftMargin, y + 6 + (i * 6), { align: 'right' });
     });
    
     // Update y position for next section
@@ -207,14 +232,14 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
     y += 18;
 
     if (includeDetails && filteredEntries.length > 0) {
-    doc.setFontSize(10);
-    doc.setTextColor(50);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Work Breakdown:', leftMargin, y);
-    y += 6;
+      doc.setFontSize(10);
+      doc.setTextColor(50);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Work Breakdown:', leftMargin, y);
+      y += 6;
 
-    doc.setFont('helvetica', 'normal');
-    filteredEntries.forEach(entry => {
+      doc.setFont('helvetica', 'normal');
+      filteredEntries.forEach(entry => {
         const desc = `${formatDate(entry.date)} — ${entry.notes || 'No notes'}`;
         const hrs = `${entry.hours} hrs`;
         
@@ -222,9 +247,9 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
         doc.text(desc, leftMargin, y);
         doc.text(hrs, pageWidth - leftMargin, y, { align: 'right' });
         y += 6;
-    });
+      });
 
-    y += 6;
+      y += 6;
     }
 
     // Thank you message
@@ -254,21 +279,21 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
     doc.text('Trading As: Social Insight Solutions', leftMargin, y + 6);
     doc.text('BSB: 067-873    Account: 1214 0872', leftMargin, y + 12);
 
-    y += 24;  // Move down for footer
+    y += 24;
 
-    // Acknowledgement text (wrap in multiple lines if needed)
+    // Acknowledgement text
     const ackText = `I am here on unceded Whadjuk Noongar and Mooro Noongar Country. I respectfully acknowledge the Whadjuk and Mooro people of the Noongar Nation as the Traditional Custodians of the lands where I live, work and learn. I honour their continuing connection to culture, country, waters, and skies and recognise the scientific contributions made by First Nations people. I pay my respects to their Elders past, present and emerging leaders.`;
 
-    // Add it near the bottom of the page
     const splitAck: string[] = doc.splitTextToSize(ackText, pageWidth - 2 * leftMargin);
     doc.setFontSize(9);
     doc.setTextColor(100);
     splitAck.forEach((line, i) => {
-        doc.text(line, pageWidth / 2, 270 + (i * 5), { align: 'center' });
+      doc.text(line, pageWidth / 2, 270 + (i * 5), { align: 'center' });
     });
 
-    doc.save(`${invoiceNumber}.pdf`);
-    };
+    // Return PDF as blob
+    return doc.output('blob');
+  };
 
   return (
     <div className="space-y-6">
@@ -393,7 +418,7 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
         disabled={!project_id || !startDate || !endDate || !client}
         className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-neutral-400 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm disabled:cursor-not-allowed"
       >
-        Generate Invoice PDF
+        Generate Invoice
       </button>
     </div>
   );
