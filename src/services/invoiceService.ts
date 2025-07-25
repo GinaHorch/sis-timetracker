@@ -73,18 +73,13 @@ export async function saveInvoiceToSupabase({
     return null;
   }
 
-  // Get signed URL
-  const { data: signedUrlData, error } = await supabase
+  // Get public URL (since bucket is public)
+  const { data: publicUrlData } = supabase
     .storage
     .from('invoices')
-    .createSignedUrl(filePath, 60 * 60); // 1 hour expiration
+    .getPublicUrl(filePath);
   
-  if (error || !signedUrlData?.signedUrl) {
-    console.error('Failed to create signed URL:', error?.message);
-    return null;
-  }
-  
-  const publicUrl = signedUrlData.signedUrl;
+  const publicUrl = publicUrlData.publicUrl;
 
   // Save invoice metadata
   const { error: insertError } = await supabase
