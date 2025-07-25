@@ -5,7 +5,7 @@ interface InvoiceCounter {
   counter: number;
 }
 
-export async function getNextInvoiceNumber(): Promise<{ invoiceNumber: string; next: number } | null> {
+export async function reserveNextInvoiceNumber(): Promise<{ invoiceNumber: string; next: number } | null> {
   // Fetch the current counter
   const { data, error } = await supabase
     .from('invoice_counter')

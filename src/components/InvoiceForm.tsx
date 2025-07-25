@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import { formatDate } from '../utils/date';
-import { getNextInvoiceNumber } from '../services/invoiceService';
+import { reserveNextInvoiceNumber, incrementInvoiceCounter } from '../services/invoiceService';
 import { Project } from '../services/projectService';
 import { Client } from '../services/clientService';
 import { TimeEntry } from '../services/timeService';
 import { toDataURL } from '@/utils/image';
 import sisLogo from '/SIS-logo-small.jpg'; // Import the logo directly
+import { toast } from 'sonner';
+import { supabase } from '../supabaseClient';
 
 interface InvoiceFormProps {
   projects: Project[];
@@ -51,13 +53,67 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
   const totalAmount = totalHours * hourlyRate;
 
   const generateInvoice = async () => {
+
+    const result = await reserveNextInvoiceNumber();
+    if (!result || result.invoiceNumber === 'SIS-ERROR') {
+      toast.error('Failed to generate invoice number');
+      return;
+    }
+
+    const { invoiceNumber, next } = result;
+
+    // Check if invoice already exists for this project & date range
+    const { data: existingInvoice, error: checkError } = await supabase
+      .from('invoices')
+      .select('id')
+      .eq('project_id', project_id)
+      .eq('start_date', startDate)
+      .eq('end_date', endDate)
+      .maybeSingle();
+
+    if (checkError) {
+      toast.error('Error checking for existing invoice');
+      console.error(checkError.message);
+      return;
+    }
+
+    if (existingInvoice) {
+      toast.error('Invoice already exists for this project and period.');
+      return;
+    }
+
+    // Insert the invoice
+    const { error: insertError } = await supabase.from('invoices').insert([
+      {
+        invoice_number: invoiceNumber,
+        project_id,
+        client_id: client?.id,
+        start_date: startDate,
+        end_date: endDate,
+        total: totalAmount,
+        hours: totalHours,
+      }
+    ]);
+
+    if (insertError) {
+      toast.error('Failed to save invoice to database');
+      console.error(insertError.message);
+      return;
+    }
+
+    // Safe to increment now with the next value
+    const success = await incrementInvoiceCounter(next);
+    if (!success) {
+      toast.warning('Invoice saved, but counter not incremented!');
+    }
+
+  // Continue with PDF generation
+
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = 210;
     const leftMargin = 20;
     let y = 20;
 
-    const today = new Date();
-    const invoiceNumber = await getNextInvoiceNumber();
 
     // Load SIS logo with proper error handling
     try {
