@@ -45,8 +45,7 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
     e.preventDefault();
     setIsSaving(true);
 
-    const projectPayload = {
-      id: existingProject?.id, // Use existing ID if editing
+    const baseProjectPayload = {
       name,
       financial_year: year,
       hourly_rate: parseFloat(hourly_rate),
@@ -58,6 +57,11 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
 
     try {
       if (isEditing) {
+        const projectPayload = {
+          ...baseProjectPayload,
+          id: existingProject!.id, // Include ID for updates
+          created_at: existingProject!.created_at, // Include created_at for updates
+        };
         const updated = await updateProject(projectPayload as Project);
         if (updated) {
           onSave(updated); // now matches expected type
@@ -67,7 +71,7 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
         }
       } else {      
 
-      const saved = await addProject(projectPayload);
+      const saved = await addProject(baseProjectPayload);
 
       if (saved) {
         const updatedProjects = await fetchProjects();
