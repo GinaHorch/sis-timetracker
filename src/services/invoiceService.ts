@@ -58,6 +58,10 @@ export async function saveInvoiceToSupabase({
 }): Promise<string | null> {
   const filePath = `${project_id}/${invoice_number}.pdf`;
 
+  // Debug: Check if user is authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  console.log('Current user:', user?.id ? 'Authenticated' : 'Not authenticated');
+
   // Upload PDF to Supabase Storage
   const { data: storageData, error: uploadError } = await supabase
     .storage
