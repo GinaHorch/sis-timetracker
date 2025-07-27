@@ -14,15 +14,18 @@ import InvoiceList from '../components/InvoiceList';
 import InvoiceFormModal from '../components/InvoiceFormModal';
 import { toast } from 'sonner';
 import { isInvoiceDay } from '../utils/invoiceReminder';
+import { saveAs } from 'file-saver';
 
 export default function RedesignedDashboard() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [entries, setEntries] = useState<TimeEntry[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const [showReminder, setShowReminder] = useState(false);
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [entries, setEntries] = useState<TimeEntry[]>([]);
+    const [clients, setClients] = useState<Client[]>([]);
+    const [editingEntry, setEditingEntry] = useState<TimeEntry | null>(null);
+    const [editingProject, setEditingProject] = useState<Project | null>(null);
+    const [showReminder, setShowReminder] = useState(false);
+    const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const [filterProject, setFilterProject] = useState<string>('');
+    const [filterYear, setFilterYear] = useState<string>('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -57,6 +60,40 @@ export default function RedesignedDashboard() {
 
   const handleEditEntry = (entry: TimeEntry) => setEditingEntry(entry);
 
+  const exportCSV = (): void => {
+    const filtered = entries.filter(entry => {
+      const project = projects.find(p => p.id === entry.project_id);
+      return (
+        (!filterProject || entry.project_id === filterProject) &&
+        (!filterYear || project?.financial_year === filterYear)
+      );
+    });
+
+    const rows = filtered.map(e => {
+        const project = projects.find(p => p.id === e.project_id);
+        return {
+            Date: e.date,
+            Project: project?.name || '',
+            FinancialYear: project?.financial_year || '',
+            Hours: e.hours,
+            Notes: e.notes
+        };
+        });
+
+    const header = Object.keys(rows[0]).join(',');
+        const body = rows.map(row => Object.values(row).join(',')).join('\n');
+        const blob = new Blob([header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
+        saveAs(blob, 'sis-timesheet.csv');
+    };
+
+    const filteredEntries = entries.filter(entry => {
+        const project = projects.find(p => p.id === entry.project_id);
+        return (
+        (!filterProject || entry.project_id === filterProject) &&
+        (!filterYear || project?.financial_year === filterYear)
+        );
+    });
+
   return (
     <div className="min-h-screen bg-neutral-50">
       <Header />
@@ -85,8 +122,8 @@ export default function RedesignedDashboard() {
           </TabsList>
 
           <TabsContent value="time" className="pt-6">
-            <Card><CardContent className="p-6">
-              <TimeEntryForm
+            <Card><CardContent className="p-6 space-y-6">
+                <TimeEntryForm
                 projects={projects}
                 onAdd={setEntries}
                 editingEntry={editingEntry}
@@ -94,9 +131,40 @@ export default function RedesignedDashboard() {
                 onDelete={handleDeleteEntry}
               />
 
+                <div className="flex gap-4 items-center flex-wrap">
+                <select
+                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700"
+                  value={filterProject}
+                  onChange={(e) => setFilterProject(e.target.value)}
+                >
+                  <option value="">All Projects</option>
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700"
+                  value={filterYear}
+                  onChange={(e) => setFilterYear(e.target.value)}
+                >
+                  <option value="">All Financial Years</option>
+                  {[...new Set(projects.map(p => p.financial_year))].map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={exportCSV}
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium"
+                >
+                  Export CSV
+                </button>
+              </div>
+
               <div className="mt-6">
                 <TimeSheetTable
-                  entries={entries}
+                  entries={filteredEntries}
                   projects={projects}
                   onEdit={handleEditEntry}
                   onDelete={handleDeleteEntry}
