@@ -28,8 +28,8 @@ export default function InvoiceFormModal({
 }: InvoiceFormModalProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-white border border-neutral-300 shadow-xl">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl bg-white border border-neutral-200 shadow-lg rounded-lg">
+        <DialogHeader className="space-y-2">
           <DialogTitle className="text-xl font-semibold text-neutral-900">
             Generate Invoice
           </DialogTitle>
@@ -38,14 +38,14 @@ export default function InvoiceFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="pt-4">
+        <div className="py-4">
           <InvoiceForm projects={projects} clients={clients} entries={entries} />
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex justify-end pt-4 border-t border-neutral-200">
           <button
             onClick={onClose}
-            className="text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
+            className="px-4 py-2 text-sm text-neutral-600 hover:text-neutral-800 hover:bg-neutral-50 rounded-md transition-colors duration-200"
           >
             Close
           </button>

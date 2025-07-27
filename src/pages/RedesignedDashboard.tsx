@@ -11,7 +11,7 @@ import ProjectFormModal from '../components/ProjectFormModal';
 import TimeEntryForm from '../components/TimeEntryForm';
 import TimeSheetTable from '../components/TimeSheetTable';
 import InvoiceList from '../components/InvoiceList';
-import InvoiceFormModal from '../components/InvoiceFormModal'; // <- To be created
+import InvoiceFormModal from '../components/InvoiceFormModal';
 import { toast } from 'sonner';
 import { isInvoiceDay } from '../utils/invoiceReminder';
 
