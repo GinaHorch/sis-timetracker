@@ -3,7 +3,7 @@ import { Project } from "@/services/projectService";
 import { formatDate } from "../utils/date";
 
 interface TimeSheetTableProps {
-  entries: TimeEntry[];
+  entries: (TimeEntry & { invoiced?: boolean })[];
   projects: Project[];
   onEdit: (entry: TimeEntry) => void;
   onDelete: (id: string) => void;
@@ -33,6 +33,7 @@ export default function TimeSheetTable({ entries, projects, onEdit, onDelete }: 
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-700 uppercase tracking-wider">Project</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-700 uppercase tracking-wider">Hours</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-700 uppercase tracking-wider">Notes</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-neutral-700 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-neutral-700 uppercase tracking-wider">Actions</th> 
                 </tr>
               </thead>
@@ -46,6 +47,13 @@ export default function TimeSheetTable({ entries, projects, onEdit, onDelete }: 
                       <div className="max-w-xs truncate" title={entry.notes || 'No notes'}>
                         {entry.notes || '—'}
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                        {entry.invoiced ? (
+                          <span className="text-green-700 text-xs bg-green-100 px-2 py-0.5 rounded-full">Invoiced</span>
+                        ) : (
+                          <span className="text-yellow-700 text-xs bg-yellow-100 px-2 py-0.5 rounded-full">Not Invoiced</span>
+                        )}
                     </td>
                     <td className="px-4 py-3 text-sm space-x-2">
                       <button

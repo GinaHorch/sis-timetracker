@@ -15,6 +15,15 @@ import InvoiceFormModal from '../components/InvoiceFormModal';
 import { toast } from 'sonner';
 import { isInvoiceDay } from '../utils/invoiceReminder';
 import { saveAs } from 'file-saver';
+import { supabase } from '../supabaseClient';
+
+interface InvoiceMeta {
+  project_id: string;
+  start_date: string;
+  end_date: string;
+}
+
+type TaggedEntry = TimeEntry & { invoiced: boolean };
 
 export default function RedesignedDashboard() {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -26,6 +35,8 @@ export default function RedesignedDashboard() {
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
     const [filterProject, setFilterProject] = useState<string>('');
     const [filterYear, setFilterYear] = useState<string>('');
+    const [invoices, setInvoices] = useState<InvoiceMeta[]>([]);
+    const [showAllEntries, setShowAllEntries] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -51,6 +62,34 @@ export default function RedesignedDashboard() {
       }
     }
   }, [projects]);
+
+  useEffect(() => {
+  const fetchInvoices = async () => {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('project_id, start_date, end_date');
+
+    if (!error && data) {
+      setInvoices(data);
+    }
+  };
+
+  fetchInvoices();
+}, []);
+
+  const taggedEntries: TaggedEntry[] = entries.map(entry => {
+    const projectInvoices = invoices.filter(i => i.project_id === entry.project_id);
+    const entryDate = new Date(entry.date);
+
+  const isInvoiced = projectInvoices.some(inv => {
+    const start = new Date(inv.start_date);
+    const end = new Date(inv.end_date);
+    return entryDate >= start && entryDate <= end;
+  });
+
+  return { ...entry, invoiced: isInvoiced };
+});
+
 
   const handleDeleteEntry = async (id: string) => {
     await deleteEntry(id);
@@ -86,11 +125,12 @@ export default function RedesignedDashboard() {
         saveAs(blob, 'sis-timesheet.csv');
     };
 
-    const filteredEntries = entries.filter(entry => {
+    const filteredEntries = taggedEntries.filter(entry => {
         const project = projects.find(p => p.id === entry.project_id);
         return (
         (!filterProject || entry.project_id === filterProject) &&
-        (!filterYear || project?.financial_year === filterYear)
+        (!filterYear || project?.financial_year === filterYear) &&
+        (showAllEntries || !entry.invoiced) // Show all or only uninvoiced entries
         );
     });
 
@@ -161,6 +201,16 @@ export default function RedesignedDashboard() {
                   Export CSV
                 </button>
               </div>
+
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                    type="checkbox"
+                    checked={showAllEntries}
+                    onChange={() => setShowAllEntries(!showAllEntries)}
+                    className="form-checkbox h-4 w-4 text-primary-600"
+                />
+                Show all entries (including invoiced)
+                </label>
 
               <div className="mt-6">
                 <TimeSheetTable
