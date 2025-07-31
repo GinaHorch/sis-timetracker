@@ -17,6 +17,7 @@ import { isInvoiceDay } from '../utils/invoiceReminder';
 import { saveAs } from 'file-saver';
 import { supabase } from '../supabaseClient';
 import { getNextInvoiceDue } from '@/utils/invoiceUtils';
+import RevenueChart from '../components/RevenueChart';
 
 interface InvoiceMeta {
   project_id: string;
@@ -181,58 +182,124 @@ export default function RedesignedDashboard() {
       )}
 
       <div className="max-w-7xl mx-auto px-6 py-6">
-        {/* Summary cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-neutral-600">Active Projects</p>
-              <p className="text-2xl font-semibold text-primary-700">{activeProjects.length}</p>
-            </CardContent>
-          </Card>
-          
+        {/* Key Metrics Summary - 2 focused cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card className="border border-neutral-200 shadow-sm">
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-neutral-600">Entries This Month</span>
-                <span className="text-2xl font-bold text-primary-700">
-                  {entries.filter(e => new Date(e.date).getMonth() === new Date().getMonth()).length}
-                </span>
+                <div>
+                  <p className="text-sm font-medium text-neutral-600 mb-1">Active Projects</p>
+                  <p className="text-3xl font-bold text-primary-700">{activeProjects.length}</p>
+                  <p className="text-xs text-neutral-500 mt-1">Currently tracking time</p>
+                </div>
+                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
               </div>
             </CardContent>
           </Card>
           
           <Card className="border border-neutral-200 shadow-sm">
-            <CardContent className="p-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-                  <span className="text-sm font-medium text-neutral-600">Next Invoice Due</span>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-2 h-2 rounded-full ${nextInvoice ? 'bg-amber-400' : 'bg-green-400'}`}></div>
+                    <span className="text-sm font-medium text-neutral-600">Next Invoice Due</span>
+                  </div>
+                  {nextInvoice ? (
+                    <div className="space-y-2">
+                      <p className="font-semibold text-neutral-900">{nextInvoice.projectName}</p>
+                      <p className="text-sm text-neutral-600 bg-amber-50 px-3 py-1 rounded-md border border-amber-200 inline-block">
+                        Due: {nextInvoice.dueDate.toLocaleDateString('en-AU')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="text-lg font-semibold text-green-700">All Up to Date</p>
+                      <p className="text-sm text-neutral-500">No invoices due</p>
+                    </div>
+                  )}
                 </div>
-                {nextInvoice ? (
-                  <div className="space-y-1">
-                    <p className="font-semibold text-neutral-900 text-sm">{nextInvoice.projectName}</p>
-                    <p className="text-xs text-neutral-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">
-                      Due: {nextInvoice.dueDate.toLocaleDateString('en-AU')}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                    <p className="text-sm text-green-700 font-medium">All invoices up to date</p>
-                  </div>
-                )}
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+                  nextInvoice ? 'bg-amber-100' : 'bg-green-100'
+                }`}>
+                  <svg className={`w-6 h-6 ${nextInvoice ? 'text-amber-600' : 'text-green-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="time">
-          <TabsList>
+        <Tabs defaultValue="overview">
+          <TabsList className="mb-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="time">Time Tracking</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Revenue Chart gets its own dedicated space */}
+            <Card className="border border-neutral-200 shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-neutral-900">Monthly Revenue</h3>
+                    <p className="text-sm text-neutral-600">Revenue tracking across all projects</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-neutral-500">
+                    <div className="w-3 h-3 bg-green-500 rounded"></div>
+                    <span>Revenue ($)</span>
+                  </div>
+                </div>
+                <RevenueChart entries={entries} projects={projects} />
+              </CardContent>
+            </Card>
+
+            {/* Additional overview metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="border border-neutral-200 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-sm text-neutral-600 mb-1">This Month's Entries</p>
+                    <p className="text-2xl font-bold text-neutral-900">
+                      {entries.filter(e => new Date(e.date).getMonth() === new Date().getMonth()).length}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-neutral-200 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-sm text-neutral-600 mb-1">Total Hours This Month</p>
+                    <p className="text-2xl font-bold text-neutral-900">
+                      {entries
+                        .filter(e => new Date(e.date).getMonth() === new Date().getMonth())
+                        .reduce((sum, e) => sum + e.hours, 0)
+                        .toFixed(1)}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border border-neutral-200 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-sm text-neutral-600 mb-1">Uninvoiced Entries</p>
+                    <p className="text-2xl font-bold text-neutral-900">
+                      {filteredEntries.filter(e => !e.invoiced).length}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
           <TabsContent value="time" className="pt-6">
             <Card><CardContent className="p-6 space-y-6">
@@ -246,7 +313,7 @@ export default function RedesignedDashboard() {
 
                 <div className="flex gap-4 items-center flex-wrap">
                 <select
-                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700"
+                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
                   value={filterProject}
                   onChange={(e) => setFilterProject(e.target.value)}
                 >
@@ -257,7 +324,7 @@ export default function RedesignedDashboard() {
                 </select>
 
                 <select
-                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700"
+                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
                   value={filterYear}
                   onChange={(e) => setFilterYear(e.target.value)}
                 >
@@ -269,7 +336,7 @@ export default function RedesignedDashboard() {
 
                 <button
                   onClick={exportCSV}
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium"
+                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all"
                 >
                   Export CSV
                 </button>
@@ -280,7 +347,7 @@ export default function RedesignedDashboard() {
                     type="checkbox"
                     checked={showAllEntries}
                     onChange={() => setShowAllEntries(!showAllEntries)}
-                    className="form-checkbox h-4 w-4 text-primary-600"
+                    className="form-checkbox h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded"
                 />
                 Show all entries (including invoiced)
                 </label>
@@ -308,7 +375,10 @@ export default function RedesignedDashboard() {
                 projects={projects}
                 onEdit={setEditingProject}
                 clients={clients}
-                onToggleActive={handleToggleActive}
+                onToggleActive={async (projectId: string, newValue: boolean) => {
+                  // Handle project active toggle here
+                  console.log('Toggle project:', projectId, newValue);
+                }}
               />
               <ProjectFormModal
                 open={!!editingProject}
@@ -328,7 +398,7 @@ export default function RedesignedDashboard() {
             <Card><CardContent className="p-6 space-y-6">
               <button
                 onClick={() => setShowInvoiceModal(true)}
-                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium"
+                className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all"
               >
                 + Generate Invoice
               </button>
