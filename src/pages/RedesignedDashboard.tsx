@@ -164,7 +164,7 @@ export default function RedesignedDashboard() {
     <div className="min-h-screen bg-neutral-50">
       <Header />
       {showReminder && (
-        <div className="max-w-7xl mx-auto px-6 mt-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-4">
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex justify-between">
             <p className="text-sm text-amber-700">It's time to generate invoices!</p>
             <button onClick={() => setShowReminder(false)} className="text-sm text-amber-600">Dismiss</button>
@@ -173,7 +173,7 @@ export default function RedesignedDashboard() {
       )}
 
       {hasMissingBilling && (
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="bg-amber-100 border border-amber-300 text-amber-900 rounded-lg p-4 mb-6 flex justify-between">
             <p className="text-sm">Some projects have time entries but are missing billing details. Add a billing start date and cycle to enable invoice tracking.</p>
             <button
@@ -184,7 +184,7 @@ export default function RedesignedDashboard() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         {/* Key Metrics Summary - 2 focused cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card className="border border-neutral-200 shadow-sm">
@@ -239,50 +239,54 @@ export default function RedesignedDashboard() {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="bg-white/80 backdrop-blur-sm border border-neutral-200/60 p-2 rounded-xl w-full max-w-2xl mx-auto mb-8 shadow-lg shadow-neutral-900/5 gap-1">
+          <TabsList className="bg-white/80 backdrop-blur-sm border border-neutral-200/60 p-2 rounded-xl w-full max-w-2xl mx-auto mb-8 shadow-lg shadow-neutral-900/5 gap-1 overflow-x-auto">
             <TabsTrigger
               value="overview"
               className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
-                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
-                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+                        px-3 sm:px-6 py-3.5 rounded-lg text-xs sm:text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-1 sm:gap-2 min-w-[80px] sm:min-w-[130px] justify-center whitespace-nowrap"
             >
-              <span className="text-base">📊</span>
-              Overview
+              <span className="text-sm sm:text-base">📊</span>
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Home</span>
             </TabsTrigger>
             <TabsTrigger
               value="time"
               className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
-                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
-                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+                        px-3 sm:px-6 py-3.5 rounded-lg text-xs sm:text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-1 sm:gap-2 min-w-[80px] sm:min-w-[130px] justify-center whitespace-nowrap"
             >
-              <span className="text-base">⏱️</span>
-              Time Tracking
+              <span className="text-sm sm:text-base">⏱️</span>
+              <span className="hidden sm:inline">Time Tracking</span>
+              <span className="sm:hidden">Time</span>
             </TabsTrigger>
             <TabsTrigger
               value="projects"
               className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
-                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
-                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+                        px-3 sm:px-6 py-3.5 rounded-lg text-xs sm:text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-1 sm:gap-2 min-w-[80px] sm:min-w-[130px] justify-center whitespace-nowrap"
             >
-              <span className="text-base">📁</span>
-              Projects
+              <span className="text-sm sm:text-base">📁</span>
+              <span className="hidden sm:inline">Projects</span>
+              <span className="sm:hidden">Projects</span>
             </TabsTrigger>
             <TabsTrigger
               value="invoices"
               className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
-                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
-                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+                        px-3 sm:px-6 py-3.5 rounded-lg text-xs sm:text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-1 sm:gap-2 min-w-[80px] sm:min-w-[130px] justify-center whitespace-nowrap"
             >
-              <span className="text-base">🧾</span>
-              Invoices
+              <span className="text-sm sm:text-base">🧾</span>
+              <span className="hidden sm:inline">Invoices</span>
+              <span className="sm:hidden">Bills</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
             {/* Revenue Chart gets its own dedicated space */}
             <Card className="border border-neutral-200 shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3 sm:gap-4">
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900">Monthly Revenue</h3>
                     <p className="text-sm text-neutral-600">Revenue tracking across all projects</p>
@@ -297,7 +301,7 @@ export default function RedesignedDashboard() {
             </Card>
 
             {/* Additional overview metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Card className="border border-neutral-200 shadow-sm">
                 <CardContent className="p-4">
                   <div className="text-center">
@@ -323,7 +327,7 @@ export default function RedesignedDashboard() {
                 </CardContent>
               </Card>
               
-              <Card className="border border-neutral-200 shadow-sm">
+              <Card className="border border-neutral-200 shadow-sm sm:col-span-2 lg:col-span-1">
                 <CardContent className="p-4">
                   <div className="text-center">
                     <p className="text-sm text-neutral-600 mb-1">Uninvoiced Entries</p>
@@ -346,9 +350,9 @@ export default function RedesignedDashboard() {
                 onDelete={handleDeleteEntry}
               />
 
-                <div className="flex gap-4 items-center flex-wrap">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <select
-                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
+                  className="w-full sm:w-auto px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
                   value={filterProject}
                   onChange={(e) => setFilterProject(e.target.value)}
                 >
@@ -359,7 +363,7 @@ export default function RedesignedDashboard() {
                 </select>
 
                 <select
-                  className="px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
+                  className="w-full sm:w-auto px-3 py-2 border border-neutral-300 rounded-lg bg-white text-neutral-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
                   value={filterYear}
                   onChange={(e) => setFilterYear(e.target.value)}
                 >
@@ -371,7 +375,7 @@ export default function RedesignedDashboard() {
 
                 <button
                   onClick={exportCSV}
-                  className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all"
+                  className="w-full sm:w-auto bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all"
                 >
                   Export CSV
                 </button>
