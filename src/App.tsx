@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
-import Dashboard from './pages/Dashboard';
+import RedesignedDashboard from './pages/RedesignedDashboard';
 import LoginPage from './pages/Auth';
 import { Toaster } from './components/ui/sonner';
 import { Progress } from './components/ui/progress';
@@ -37,7 +37,7 @@ export default function App() {
     <>
     <Toaster />
     <div className="min-h-screen bg-gray-50">
-      {user ? <Dashboard /> : <LoginPage />}
+      {user ? <RedesignedDashboard /> : <LoginPage />}
     </div>
     </>
   );

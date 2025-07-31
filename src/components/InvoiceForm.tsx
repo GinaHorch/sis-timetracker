@@ -137,8 +137,10 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
   const generatePDFBlob = async (invoiceNumber: string): Promise<Blob> => {
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const pageWidth = 210;
+    const pageHeight = 297;
     const leftMargin = 20;
-    let y = 20;
+    const bottomBuffer = 40;
+    let y = 10;
 
     // Load SIS logo with proper error handling
     try {
@@ -150,27 +152,24 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
         'JPEG', 
         leftMargin, 
         y, 
-        40, 
-        30
+        50, 
+        35
       );
     } catch (error) {
       console.warn('Could not load SIS logo:', error);
       // Continue without logo if it fails to load
     }
-
+    y += 40;
     // Invoice title
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text('SERVICE INVOICE', pageWidth - leftMargin, y + 10, { align: 'right' });
+    doc.text('SERVICE INVOICE', pageWidth - leftMargin, y - 30, { align: 'right' });
 
     // Generate invoice number and today's date
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Invoice Number: ${invoiceNumber}`, pageWidth - leftMargin, y + 18, { align: 'right' });
-    doc.text(`Invoice Date: ${formatDate(today.toISOString())}`, pageWidth - leftMargin, y + 24, { align: 'right' });
-
-    // Update y position for next section
-    y += 40;
+    doc.text(`Invoice Number: ${invoiceNumber}`, pageWidth - leftMargin, y - 22, { align: 'right' });
+    doc.text(`Invoice Date: ${formatDate(today.toISOString())}`, pageWidth - leftMargin, y - 16, { align: 'right' });
 
     // Set font for client and business section
     doc.setFontSize(11);
@@ -214,9 +213,10 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
     doc.setFontSize(10);
     doc.text(`${selectedProject?.name || 'Project'} — ${filteredEntries.length} entries`, leftMargin, y);
     doc.text(`${totalHours} hours x $${hourlyRate}/hr`, leftMargin, y + 6);
+    doc.text(`Service Period: ${formatDate(startDate)} – ${formatDate(endDate)}`, leftMargin, y + 12);
     doc.text(`$${totalAmount.toFixed(2)}`, pageWidth - leftMargin, y + 6, { align: 'right' });
 
-    y += 8;
+    y += 20;
 
     // Horizontal line before TOTAL
     doc.setDrawColor(0);
@@ -242,16 +242,36 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
       filteredEntries.forEach(entry => {
         const desc = `${formatDate(entry.date)} — ${entry.notes || 'No notes'}`;
         const hrs = `${entry.hours} hrs`;
-        
-        // Draw line items
-        doc.text(desc, leftMargin, y);
-        doc.text(hrs, pageWidth - leftMargin, y, { align: 'right' });
+
+        doc.setFont('helvetica', 'normal');
+        for (const entry of filteredEntries) {
+          const wrapped = doc.splitTextToSize(`${formatDate(entry.date)} — ${entry.notes || 'No notes'}`, pageWidth - 2 * leftMargin - 40);
+          for (let i = 0; i < wrapped.length; i++) {
+            if (y > pageHeight - bottomBuffer) {
+              doc.addPage();
+              y = 20;
+              doc.setFont('helvetica', 'bold');
+              doc.text('Continued Work Breakdown:', leftMargin, y);
+              y += 8;
+              doc.setFont('helvetica', 'normal');
+            }
+            doc.text(wrapped[i], leftMargin, y);
+            if (i === 0) {
+              doc.text(`${entry.hours} hrs`, pageWidth - leftMargin, y, { align: 'right' });
+            }
+            y += 6;
+          }
+        }
         y += 6;
       });
-
-      y += 6;
     }
-
+        
+    // Check if we need a new page before footer content
+    if (y > pageHeight - 60) {
+      doc.addPage();
+      y = 20;
+    }
+    
     // Thank you message
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(10);
@@ -288,8 +308,17 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
     doc.setFontSize(9);
     doc.setTextColor(100);
     splitAck.forEach((line, i) => {
-      doc.text(line, pageWidth / 2, 270 + (i * 5), { align: 'center' });
+      doc.text(line, pageWidth / 2, 260 + (i * 5), { align: 'center' });
     });
+
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    }
+
 
     // Return PDF as blob
     return doc.output('blob');
@@ -423,4 +452,3 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
     </div>
   );
 }
-

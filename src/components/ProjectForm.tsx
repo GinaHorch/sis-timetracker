@@ -25,6 +25,7 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
   const [client_id, setClient_id] = useState<string>('');
   const [billing_start_date, setBilling_start_date] = useState('');
   const [billing_cycle, setBilling_cycle] = useState('fortnightly');
+  const [is_active, setIsActive] = useState(true);
   const [showClientForm, setShowClientForm] = useState(false);
   const [description, setDescription] = useState(''); // Optional description field
   const [isSaving, setIsSaving] = useState(false);
@@ -38,6 +39,7 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
       setDescription(existingProject.description || '');
       setBilling_start_date(existingProject.billing_start_date || '');
       setBilling_cycle(existingProject.billing_cycle || 'fortnightly');
+      setIsActive(existingProject.is_active !== undefined ? existingProject.is_active : true);
     }
   }, [existingProject]);
 
@@ -53,6 +55,7 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
       description: description || '', // Optional field
       billing_start_date: billing_start_date || undefined, // Optional field
       billing_cycle: billing_cycle || 'fortnightly', // Default to fortnightly
+      is_active, // Include active state
     }
 
     try {
@@ -216,6 +219,19 @@ export default function ProjectForm({ existingProject, onAdd, onSave, onCancel, 
             >
               + Add New Client
             </button>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              id="is_active"
+              checked={is_active}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+            />
+            <label htmlFor="is_active" className="text-sm text-neutral-700">
+              Active Project
+            </label>
           </div>
 
           <div className="flex gap-3 pt-4">
