@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { isInvoiceDay } from '../utils/invoiceReminder';
 import { saveAs } from 'file-saver';
 import { supabase } from '../supabaseClient';
+import { getNextInvoiceDue } from '@/utils/invoiceUtils';
 
 interface InvoiceMeta {
   project_id: string;
@@ -37,6 +38,25 @@ export default function RedesignedDashboard() {
     const [filterYear, setFilterYear] = useState<string>('');
     const [invoices, setInvoices] = useState<InvoiceMeta[]>([]);
     const [showAllEntries, setShowAllEntries] = useState(false);
+    const [dismissMissingBilling, setDismissMissingBilling] = useState(false);
+
+    const taggedEntries: TaggedEntry[] = entries.map(entry => {
+    const projectInvoices = invoices.filter(i => i.project_id === entry.project_id);
+    const entryDate = new Date(entry.date);
+    const isInvoiced = projectInvoices.some(inv => {
+      const start = new Date(inv.start_date);
+      const end = new Date(inv.end_date);
+      return entryDate >= start && entryDate <= end;
+    });
+    return { ...entry, invoiced: isInvoiced };
+  });
+
+  const projectsWithBilling = projects.filter(p => p.billing_start_date && p.billing_cycle);
+  const nextInvoice = projectsWithBilling.length > 0 ? getNextInvoiceDue(projects) : null;
+  const hasMissingBilling = !dismissMissingBilling && projects.some(p => {
+    const hasEntries = entries.some(e => e.project_id === p.id);
+    return hasEntries && (!p.billing_start_date || !p.billing_cycle);
+  });
 
   useEffect(() => {
     const loadData = async () => {
@@ -53,7 +73,6 @@ export default function RedesignedDashboard() {
   }, []);
 
   useEffect(() => {
-    const projectsWithBilling = projects.filter(p => p.billing_start_date && p.billing_cycle);
     const today = new Date();
     for (const p of projectsWithBilling) {
       if (isInvoiceDay(new Date(p.billing_start_date!), p.billing_cycle!, today)) {
@@ -76,20 +95,6 @@ export default function RedesignedDashboard() {
 
   fetchInvoices();
 }, []);
-
-  const taggedEntries: TaggedEntry[] = entries.map(entry => {
-    const projectInvoices = invoices.filter(i => i.project_id === entry.project_id);
-    const entryDate = new Date(entry.date);
-
-  const isInvoiced = projectInvoices.some(inv => {
-    const start = new Date(inv.start_date);
-    const end = new Date(inv.end_date);
-    return entryDate >= start && entryDate <= end;
-  });
-
-  return { ...entry, invoiced: isInvoiced };
-});
-
 
   const handleDeleteEntry = async (id: string) => {
     await deleteEntry(id);
@@ -146,12 +151,64 @@ export default function RedesignedDashboard() {
         </div>
       )}
 
+      {hasMissingBilling && (
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-amber-100 border border-amber-300 text-amber-900 rounded-lg p-4 mb-6 flex justify-between">
+            <p className="text-sm">Some projects have time entries but are missing billing details. Add a billing start date and cycle to enable invoice tracking.</p>
+            <button
+              className="text-sm text-amber-700 hover:underline"
+              onClick={() => setDismissMissingBilling(true)}
+            >Dismiss</button>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Summary cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          <Card><CardContent className="p-4">Total Projects: {projects.length}</CardContent></Card>
-          <Card><CardContent className="p-4">Entries This Month: {entries.filter(e => new Date(e.date).getMonth() === new Date().getMonth()).length}</CardContent></Card>
-          <Card><CardContent className="p-4">Uninvoiced Projects: {projects.filter(p => p.billing_start_date).length}</CardContent></Card>
+          <Card className="border border-neutral-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-neutral-600">Total Projects</span>
+                <span className="text-2xl font-bold text-primary-700">{projects.length}</span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-neutral-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-neutral-600">Entries This Month</span>
+                <span className="text-2xl font-bold text-primary-700">
+                  {entries.filter(e => new Date(e.date).getMonth() === new Date().getMonth()).length}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border border-neutral-200 shadow-sm">
+            <CardContent className="p-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-amber-400"></div>
+                  <span className="text-sm font-medium text-neutral-600">Next Invoice Due</span>
+                </div>
+                {nextInvoice ? (
+                  <div className="space-y-1">
+                    <p className="font-semibold text-neutral-900 text-sm">{nextInvoice.projectName}</p>
+                    <p className="text-xs text-neutral-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-200">
+                      Due: {nextInvoice.dueDate.toLocaleDateString('en-AU')}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                    <p className="text-sm text-green-700 font-medium">All invoices up to date</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs defaultValue="time">
