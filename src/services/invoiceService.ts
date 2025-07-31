@@ -110,3 +110,71 @@ export async function saveInvoiceToSupabase({
 
   return publicUrl;
 }
+
+export async function updateInvoiceInSupabase({
+  invoice_number,
+  project_id,
+  client_id,
+  start_date,
+  end_date,
+  total_amount,
+  total_hours,
+  pdfBlob,
+}: {
+  invoice_number: string;
+  project_id: string;
+  client_id: string;
+  start_date: string;
+  end_date: string;
+  total_amount: number;
+  total_hours: number;
+  pdfBlob: Blob;
+}): Promise<string | null> {
+  const filePath = `${project_id}/${invoice_number}.pdf`;
+
+  // Debug: Check if user is authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  console.log('Current user for update:', user?.id ? 'Authenticated' : 'Not authenticated');
+  console.log('User ID for update:', user?.id);
+  console.log('File path for update:', filePath);
+
+  // Upload PDF to Supabase Storage (this will overwrite the existing file)
+  const { data: storageData, error: uploadError } = await supabase
+    .storage
+    .from('invoices')
+    .upload(filePath, pdfBlob, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: 'application/pdf',
+    });
+
+  if (uploadError) {
+    console.error('Upload error:', uploadError.message);
+    return null;
+  }
+
+  // Get public URL (since bucket is public)
+  const { data: publicUrlData } = supabase
+    .storage
+    .from('invoices')
+    .getPublicUrl(filePath);
+  
+  const publicUrl = publicUrlData.publicUrl;
+
+  // Update existing invoice metadata
+  const { error: updateError } = await supabase
+    .from('invoices')
+    .update({
+      total_amount,
+      total_hours,
+      pdf_url: publicUrl,
+    })
+    .eq('invoice_number', invoice_number);
+
+  if (updateError) {
+    console.error('DB update error:', updateError.message);
+    return null;
+  }
+
+  return publicUrl;
+}

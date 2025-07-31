@@ -29,20 +29,20 @@ export default function InvoiceList({ projects, clients }: Props) {
   const [filterYear, setFilterYear] = useState('');
   const [regeneratingInvoice, setRegeneratingInvoice] = useState<Invoice | null>(null);
 
+  const fetchInvoices = async () => {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .order('start_date', { ascending: false });
+
+    if (error) {
+      console.error('Failed to fetch invoices:', error.message);
+    } else {
+      setInvoices(data || []);
+    }
+  };
+
   useEffect(() => {
-    const fetchInvoices = async () => {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*')
-        .order('start_date', { ascending: false });
-
-      if (error) {
-        console.error('Failed to fetch invoices:', error.message);
-      } else {
-        setInvoices(data || []);
-      }
-    };
-
     fetchInvoices();
   }, []);
 
@@ -154,6 +154,10 @@ export default function InvoiceList({ projects, clients }: Props) {
             end_date={regeneratingInvoice.end_date}
             clients={clients}
             projects={projects}
+            onSuccess={() => {
+              fetchInvoices(); // Refresh the invoice list
+              setRegeneratingInvoice(null);
+            }}
           />
         )}
       </div>

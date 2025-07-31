@@ -16,7 +16,7 @@ import sisLogo from '/SIS-logo-small.jpg';
 import { TimeEntry, fetchEntries } from '../services/timeService';
 import { Project } from '../services/projectService';
 import { Client } from '../services/clientService';
-import { saveInvoiceToSupabase } from '../services/invoiceService';
+import { saveInvoiceToSupabase, updateInvoiceInSupabase } from '../services/invoiceService';
 
 interface Props {
   open: boolean;
@@ -27,6 +27,7 @@ interface Props {
   end_date: string;
   clients: Client[];
   projects: Project[];
+  onSuccess?: () => void;
 }
 
 export default function RegenerateInvoiceModal({
@@ -38,6 +39,7 @@ export default function RegenerateInvoiceModal({
   end_date,
   clients,
   projects,
+  onSuccess,
 }: Props) {
   const [includeDetails, setIncludeDetails] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -70,10 +72,10 @@ export default function RegenerateInvoiceModal({
         end_date,
       });
 
-      const url = await saveInvoiceToSupabase({
+      const url = await updateInvoiceInSupabase({
+        invoice_number: invoiceNumber,
         project_id,
         client_id: client?.id || '',
-        invoice_number: invoiceNumber,
         start_date,
         end_date,
         total_amount: totalAmount,
@@ -83,6 +85,7 @@ export default function RegenerateInvoiceModal({
 
       if (url) {
         toast.success('Invoice PDF regenerated and overwritten.');
+        onSuccess?.(); // Call the success callback to refresh the list
         onClose();
       } else {
         toast.error('Failed to save updated invoice PDF.');
