@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './supabaseClient';
-// import Dashboard from './pages/Dashboard';
 import RedesignedDashboard from './pages/RedesignedDashboard';
 import LoginPage from './pages/Auth';
 import { Toaster } from './components/ui/sonner';
