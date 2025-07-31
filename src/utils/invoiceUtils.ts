@@ -7,7 +7,7 @@ export function getNextInvoiceDue(projects: Project[]): {
   const today = new Date();
 
   const dueDates = projects
-    .filter(p => p.billing_start_date && p.billing_cycle)
+    .filter(p => p.is_active && p.billing_start_date && p.billing_cycle)
     .map(p => {
       const start = new Date(p.billing_start_date!);
       const next = getNextCycleDate(start, p.billing_cycle!, today);

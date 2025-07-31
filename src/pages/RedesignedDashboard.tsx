@@ -74,6 +74,9 @@ export default function RedesignedDashboard() {
   }, []);
 
   useEffect(() => {
+    const projectsWithBilling = projects.filter(
+    p => p.is_active && p.billing_start_date && p.billing_cycle
+  );
     const today = new Date();
     for (const p of projectsWithBilling) {
       if (isInvoiceDay(new Date(p.billing_start_date!), p.billing_cycle!, today)) {
@@ -236,11 +239,43 @@ export default function RedesignedDashboard() {
         </div>
 
         <Tabs defaultValue="overview">
-          <TabsList className="mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="time">Time Tracking</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsList className="bg-white/80 backdrop-blur-sm border border-neutral-200/60 p-2 rounded-xl w-full max-w-2xl mx-auto mb-8 shadow-lg shadow-neutral-900/5 gap-1">
+            <TabsTrigger
+              value="overview"
+              className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
+                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+            >
+              <span className="text-base">📊</span>
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="time"
+              className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
+                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+            >
+              <span className="text-base">⏱️</span>
+              Time Tracking
+            </TabsTrigger>
+            <TabsTrigger
+              value="projects"
+              className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
+                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+            >
+              <span className="text-base">📁</span>
+              Projects
+            </TabsTrigger>
+            <TabsTrigger
+              value="invoices"
+              className="data-[state=active]:bg-primary-600 data-[state=active]:text-white data-[state=active]:shadow-md
+                        px-6 py-3.5 rounded-lg text-sm font-semibold text-neutral-600 hover:text-primary-700 
+                        hover:bg-neutral-50 transition-all duration-200 flex items-center gap-2 min-w-[130px] justify-center"
+            >
+              <span className="text-base">🧾</span>
+              Invoices
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
