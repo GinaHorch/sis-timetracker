@@ -4,6 +4,7 @@ import { Project } from '../services/projectService';
 import { Client } from '../services/clientService';
 import { formatDate } from '../utils/date';
 import { Card } from "@/components/ui/card";
+import RegenerateInvoiceModal from './RegenerateInvoiceModal';
 
 interface Invoice {
   id: string;
@@ -26,6 +27,7 @@ export default function InvoiceList({ projects, clients }: Props) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filterProject, setFilterProject] = useState('');
   const [filterYear, setFilterYear] = useState('');
+  const [regeneratingInvoice, setRegeneratingInvoice] = useState<Invoice | null>(null);
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -121,6 +123,12 @@ export default function InvoiceList({ projects, clients }: Props) {
                     >
                       Download
                     </a>
+                    <button
+                      onClick={() => setRegeneratingInvoice(inv)}
+                      className="text-xs text-blue-600 hover:text-blue-800 ml-2 underline"
+                    >
+                      Regenerate PDF
+                    </button>
                   </td>
                 </tr>
               );
@@ -134,6 +142,18 @@ export default function InvoiceList({ projects, clients }: Props) {
             )}
           </tbody>
         </table>
+        {regeneratingInvoice && (
+          <RegenerateInvoiceModal
+            open={!!regeneratingInvoice}
+            onClose={() => setRegeneratingInvoice(null)}
+            invoiceNumber={regeneratingInvoice.invoice_number}
+            project_id={regeneratingInvoice.project_id}
+            start_date={regeneratingInvoice.start_date}
+            end_date={regeneratingInvoice.end_date}
+            clients={clients}
+            projects={projects}
+          />
+        )}
       </div>
     </Card>
   );
