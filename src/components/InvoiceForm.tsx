@@ -214,9 +214,10 @@ export default function InvoiceForm({ projects, clients, entries }: InvoiceFormP
     doc.setFontSize(10);
     doc.text(`${selectedProject?.name || 'Project'} — ${filteredEntries.length} entries`, leftMargin, y);
     doc.text(`${totalHours} hours x $${hourlyRate}/hr`, leftMargin, y + 6);
+    doc.text(`Service Period: ${formatDate(startDate)} – ${formatDate(endDate)}`, leftMargin, y + 12);
     doc.text(`$${totalAmount.toFixed(2)}`, pageWidth - leftMargin, y + 6, { align: 'right' });
 
-    y += 8;
+    y += 20;
 
     // Horizontal line before TOTAL
     doc.setDrawColor(0);
