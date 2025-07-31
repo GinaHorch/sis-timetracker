@@ -128,7 +128,7 @@ export default function RedesignedDashboard() {
       );
     });
 
-    const rows = filtered.map(e => {
+  const rows = filtered.map(e => {
         const project = projects.find(p => p.id === e.project_id);
         return {
             Date: e.date,
@@ -137,15 +137,15 @@ export default function RedesignedDashboard() {
             Hours: e.hours,
             Notes: e.notes
         };
-        });
+    });
 
-    const header = Object.keys(rows[0]).join(',');
+  const header = Object.keys(rows[0]).join(',');
         const body = rows.map(row => Object.values(row).join(',')).join('\n');
         const blob = new Blob([header + '\n' + body], { type: 'text/csv;charset=utf-8;' });
         saveAs(blob, 'sis-timesheet.csv');
     };
 
-    const filteredEntries = taggedEntries.filter(entry => {
+  const filteredEntries = taggedEntries.filter(entry => {
         const project = projects.find(p => p.id === entry.project_id);
         return (
         (!filterProject || entry.project_id === filterProject) &&
@@ -153,6 +153,8 @@ export default function RedesignedDashboard() {
         (showAllEntries || !entry.invoiced) // Show all or only uninvoiced entries
         );
     });
+
+  const activeProjects = projects.filter(p => p.is_active !== false);
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -181,12 +183,11 @@ export default function RedesignedDashboard() {
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Summary cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-          <Card className="border border-neutral-200 shadow-sm">
+
+          <Card>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-neutral-600">Total Projects</span>
-                <span className="text-2xl font-bold text-primary-700">{projects.length}</span>
-              </div>
+              <p className="text-sm text-neutral-600">Active Projects</p>
+              <p className="text-2xl font-semibold text-primary-700">{activeProjects.length}</p>
             </CardContent>
           </Card>
           
