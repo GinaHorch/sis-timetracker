@@ -165,23 +165,24 @@ async function generatePDFBlob({
 }): Promise<Blob> {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageWidth = 210;
+  const pageHeight = 297;
   const leftMargin = 20;
-  let y = 20;
+  const bottomBuffer = 40;
+  let y = 10;
 
   try {
     const imageData = await toDataURL(sisLogo);
-    doc.addImage(imageData, 'JPEG', leftMargin, y, 40, 30);
+    doc.addImage(imageData, 'JPEG', leftMargin, y, 50, 35);
   } catch (e) {}
 
+  y += 40;
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('SERVICE INVOICE', pageWidth - leftMargin, y + 10, { align: 'right' });
+  doc.text('SERVICE INVOICE', pageWidth - leftMargin, y - 30, { align: 'right' });
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Invoice Number: ${invoiceNumber}`, pageWidth - leftMargin, y + 18, { align: 'right' });
-  doc.text(`Invoice Date: ${formatDate(new Date().toISOString())}`, pageWidth - leftMargin, y + 24, { align: 'right' });
-
-  y += 40;
+  doc.text(`Invoice Number: ${invoiceNumber}`, pageWidth - leftMargin, y - 22, { align: 'right' });
+  doc.text(`Invoice Date: ${formatDate(new Date().toISOString())}`, pageWidth - leftMargin, y - 16, { align: 'right' });
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
@@ -238,14 +239,30 @@ async function generatePDFBlob({
     y += 6;
 
     doc.setFont('helvetica', 'normal');
-    entries.forEach(entry => {
-      const desc = `${formatDate(entry.date)} — ${entry.notes || 'No notes'}`;
-      const hrs = `${entry.hours} hrs`;
-      doc.text(desc, leftMargin, y);
-      doc.text(hrs, pageWidth - leftMargin, y, { align: 'right' });
-      y += 6;
-    });
+    for (const entry of entries) {
+      const wrapped = doc.splitTextToSize(`${formatDate(entry.date)} — ${entry.notes || 'No notes'}`, pageWidth - 2 * leftMargin - 40);
+      for (let i = 0; i < wrapped.length; i++) {
+        if (y > pageHeight - bottomBuffer) {
+          doc.addPage();
+          y = 20;
+          doc.setFont('helvetica', 'bold');
+          doc.text('Continued Work Breakdown:', leftMargin, y);
+          y += 8;
+          doc.setFont('helvetica', 'normal');
+        }
+        doc.text(wrapped[i], leftMargin, y);
+        if (i === 0) {
+          doc.text(`${entry.hours} hrs`, pageWidth - leftMargin, y, { align: 'right' });
+        }
+        y += 6;
+      }
+    }
     y += 6;
+  }
+
+  if (y > pageHeight - 60) {
+    doc.addPage();
+    y = 20;
   }
 
   doc.setFont('helvetica', 'italic');
@@ -257,6 +274,40 @@ async function generatePDFBlob({
   doc.setFontSize(9);
   doc.setTextColor(80);
   doc.text('No GST has been charged. Social Insight Solutions is not currently registered for GST.', leftMargin, y);
+  y += 18;
+
+  // Payment heading
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Payment Details:', leftMargin, y);
+    y += 6;
+
+    // Payment details (normal font)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('Account Name: Regine Horch', leftMargin, y);
+    doc.text('Trading As: Social Insight Solutions', leftMargin, y + 6);
+    doc.text('BSB: 067-873    Account: 1214 0872', leftMargin, y + 12);
+
+    y += 24;
+
+  // Acknowledgement text
+    const ackText = `I am here on unceded Whadjuk Noongar and Mooro Noongar Country. I respectfully acknowledge the Whadjuk and Mooro people of the Noongar Nation as the Traditional Custodians of the lands where I live, work and learn. I honour their continuing connection to culture, country, waters, and skies and recognise the scientific contributions made by First Nations people. I pay my respects to their Elders past, present and emerging leaders.`;
+
+    const splitAck: string[] = doc.splitTextToSize(ackText, pageWidth - 2 * leftMargin);
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    splitAck.forEach((line, i) => {
+      doc.text(line, pageWidth / 2, 260 + (i * 5), { align: 'center' });    // I may decide later to use const ackY = pageHeight - 27 instead of hardcoding a position.
+    });
+
+    const pageCount = doc.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        }
 
   return doc.output('blob');
 }
