@@ -104,6 +104,21 @@ export default function RedesignedDashboard() {
 
   const handleEditEntry = (entry: TimeEntry) => setEditingEntry(entry);
 
+  const handleToggleActive = async (projectId: string, newValue: boolean) => {
+  const { error } = await supabase
+    .from('projects')
+    .update({ is_active: newValue })
+    .eq('id', projectId);
+
+  if (!error) {
+    const updated = await fetchProjects();
+    setProjects(updated);
+    toast.success(`Project marked as ${newValue ? 'active' : 'inactive'}.`);
+  } else {
+    toast.error('Failed to update project status.');
+  }
+};
+
   const exportCSV = (): void => {
     const filtered = entries.filter(entry => {
       const project = projects.find(p => p.id === entry.project_id);
@@ -292,6 +307,7 @@ export default function RedesignedDashboard() {
                 projects={projects}
                 onEdit={setEditingProject}
                 clients={clients}
+                onToggleActive={handleToggleActive}
               />
               <ProjectFormModal
                 open={!!editingProject}
