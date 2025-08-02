@@ -36,7 +36,7 @@ export default function App() {
   }
 
   return (
-    <Router basename={process.env.NODE_ENV === 'production' ? '/sis-timetracker' : ''}>
+    <Router>
       <Toaster />
       <div className="min-h-screen bg-gray-50">
         <Routes>

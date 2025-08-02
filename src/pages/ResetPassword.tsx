@@ -17,7 +17,7 @@ export default function ResetPassword() {
       } else {
         toast.error('Invalid or expired reset link');
         setTimeout(() => {
-          window.location.href = '/';
+          window.location.href = window.location.hostname === 'localhost' ? '/' : '/sis-timetracker/';
         }, 2000);
       }
     };
@@ -50,7 +50,7 @@ export default function ResetPassword() {
       } else {
         toast.success('Password updated successfully! Redirecting...');
         setTimeout(() => {
-          window.location.href = '/dashboard';
+          window.location.href = window.location.hostname === 'localhost' ? '/dashboard' : '/sis-timetracker/dashboard';
         }, 2000);
       }
     } catch (error) {
@@ -123,7 +123,7 @@ export default function ResetPassword() {
 
           <div className="mt-6 text-center">
             <button
-              onClick={() => window.location.href = '/'}
+              onClick={() => window.location.href = window.location.hostname === 'localhost' ? '/' : '/sis-timetracker/'}
               className="text-sm text-primary-600 hover:text-primary-700"
             >
               Back to Login

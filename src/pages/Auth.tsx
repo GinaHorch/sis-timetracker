@@ -3,6 +3,15 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '../supabaseClient';
 
 export default function LoginPage() {
+  // Dynamic redirect URL based on environment
+  const getRedirectUrl = () => {
+    if (window.location.hostname === 'localhost') {
+      return `${window.location.origin}/reset-password`;
+    } else {
+      return `${window.location.origin}/sis-timetracker/reset-password`;
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-neutral-50">
       <div className="w-full max-w-md">
@@ -32,7 +41,7 @@ export default function LoginPage() {
             view="sign_in"
             showLinks={true}
             magicLink={false}
-            redirectTo={`${window.location.origin}/reset-password`}
+            redirectTo={getRedirectUrl()}
           />
           
           <div className="mt-6 text-center">
