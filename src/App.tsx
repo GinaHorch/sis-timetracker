@@ -35,8 +35,11 @@ export default function App() {
     );
   }
 
+  // Determine the basename for routing
+  const basename = window.location.hostname === 'localhost' ? '' : '/sis-timetracker';
+
   return (
-    <Router>
+    <Router basename={basename}>
       <Toaster />
       <div className="min-h-screen bg-gray-50">
         <Routes>
