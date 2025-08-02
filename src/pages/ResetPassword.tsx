@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { toast } from 'sonner';
 
@@ -7,6 +8,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [isValidSession, setIsValidSession] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if this is a valid password reset session
@@ -17,7 +19,7 @@ export default function ResetPassword() {
       } else {
         toast.error('Invalid or expired reset link');
         setTimeout(() => {
-          window.location.href = window.location.hostname === 'localhost' ? '/' : '/sis-timetracker/';
+          navigate('/');
         }, 2000);
       }
     };
@@ -50,7 +52,7 @@ export default function ResetPassword() {
       } else {
         toast.success('Password updated successfully! Redirecting...');
         setTimeout(() => {
-          window.location.href = window.location.hostname === 'localhost' ? '/dashboard' : '/sis-timetracker/dashboard';
+          navigate('/dashboard');
         }, 2000);
       }
     } catch (error) {
@@ -123,7 +125,7 @@ export default function ResetPassword() {
 
           <div className="mt-6 text-center">
             <button
-              onClick={() => window.location.href = window.location.hostname === 'localhost' ? '/' : '/sis-timetracker/'}
+              onClick={() => navigate('/')}
               className="text-sm text-primary-600 hover:text-primary-700"
             >
               Back to Login
