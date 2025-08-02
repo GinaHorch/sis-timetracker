@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import RedesignedDashboard from './pages/RedesignedDashboard';
 import LoginPage from './pages/Auth';
+import ResetPassword from './pages/ResetPassword';
 import { Toaster } from './components/ui/sonner';
 import { Progress } from './components/ui/progress';
 
@@ -34,11 +36,24 @@ export default function App() {
   }
 
   return (
-    <>
-    <Toaster />
-    <div className="min-h-screen bg-gray-50">
-      {user ? <RedesignedDashboard /> : <LoginPage />}
-    </div>
-    </>
+    <Router>
+      <Toaster />
+      <div className="min-h-screen bg-gray-50">
+        <Routes>
+          <Route 
+            path="/reset-password" 
+            element={<ResetPassword />} 
+          />
+          <Route 
+            path="/" 
+            element={user ? <RedesignedDashboard /> : <LoginPage />} 
+          />
+          <Route 
+            path="/dashboard" 
+            element={user ? <RedesignedDashboard /> : <Navigate to="/" />} 
+          />
+        </Routes>
+      </div>
+    </Router>
   );
 }
